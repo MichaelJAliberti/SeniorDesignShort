@@ -34,9 +34,8 @@ const FlatListBasics = () => {
     );
   }
 
-const RecipeHistoryPage = ({ navigation: { navigate, goBack } }) => {
+  export default function RecipeHistoryPage ({ navigation: { navigate, goBack } }) {
     const onPressAddRecipe = () => {
-        alert("Adding Recipe!")
         navigate('Camera')
     }
 
@@ -72,9 +71,6 @@ const styles = StyleSheet.create({
         height: 44,
     }
 })
-
-
-export default RecipeHistoryPage;
 
 // <View>
 // <Button title="Back to Recipes" onPress={() => goBack()} />

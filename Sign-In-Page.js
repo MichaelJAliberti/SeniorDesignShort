@@ -8,7 +8,7 @@ import {
     Button } from "react-native";
 import RecipeHistoryPage from './Recipe-History-Page'
 
-const SignInPage = ({ navigation: { navigate } }) => {
+export default function SignInPage({ navigation: { navigate } }) {
     const [text, onChangeText] = React.useState("Useless Text");
     const [number, onChangeNumber] = React.useState(null);
     const onPressLogin = () => {
@@ -56,5 +56,3 @@ const styles = StyleSheet.create ({
     button : {
     }
 }); 
-
-export default SignInPage;
