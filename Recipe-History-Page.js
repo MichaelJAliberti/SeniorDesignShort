@@ -12,7 +12,6 @@ import { FAB } from 'react-native-paper';
 const actions = [
     {
       text: "Add Recipe",
-    //   icon: require("./images/ic_accessibility_white.png"),
       name: "bt_accessibility",
       position: 1
     }
@@ -52,8 +51,6 @@ const styles = StyleSheet.create({
     fab: {
         position: 'relative', // change to absolute for bottom-right position
         margin: 16
-        // right: 0,
-        // bottom: 0,
     },
     container: {
         flex: 1,
@@ -71,7 +68,3 @@ const styles = StyleSheet.create({
         height: 44,
     }
 })
-
-// <View>
-// <Button title="Back to Recipes" onPress={() => goBack()} />
-// </View>
