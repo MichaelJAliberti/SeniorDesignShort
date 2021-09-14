@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignInPage from './Sign-In-Page'
 import RecipeHistoryPage from './Recipe-History-Page'
 import CameraPage from './Camera-Page'
-import NutritionReveal from './nutrition_retrieval'
 
 const Stack = createNativeStackNavigator();
 
