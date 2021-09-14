@@ -7,24 +7,68 @@ import {
     StyleSheet,
     Button,
     TouchableOpacity } from "react-native";
-// import { FAB } from 'react-native-paper';
-// import { Camera } from 'expo-camera';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { BarCodeScanner } from 'expo-barcode-scanner'
+//import NutritionRetrieval from './nutrition_retrieval'
+import { db } from './firebaseConfig'
 
-export default function CameraPage() {
+export default function CameraPage({ navigation: { navigate } }) {
     const [hasPermission, setHasPermission] = useState(null);
+    const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
+    const [fdaData, setFdaData] = useState([]);
+    const [foodName, setFood] =  useState([]);
 
     useEffect(() => {
-    (async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync();
-        setHasPermission(status === 'granted');
-    })();
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
     }, []);
 
-    const handleBarCodeScanned = ({ type, data }) => {
+    const getNutrition = async (upc) => {
+        try {
+            const fdaResponse = db.collection('FdaRetrieval').doc('Fda');
+            const fdaDoc = await fdaResponse.get();
+            const fdaKey = `${fdaDoc.get('FdaApi')}`
+
+            const fdcNumQuerry = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${upc}&api_key=${fdaKey}`
+            const fdcNumResponse = await fetch(
+                fdcNumQuerry,
+                {
+                    method: 'GET'
+                }
+            );
+            let fdcNumJson = await fdcNumResponse.json();
+            const foodData = fdcNumJson.foods[0]
+            setFood(`${foodData.description}`)
+            let fdcId = foodData.fdcId
+
+            const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
+            const caloriesResponse = await fetch(
+                caloriesQuerry,
+                {
+                    method: 'GET'
+                }
+            );
+            let caloriesJson = await caloriesResponse.json();
+            const caloriesData = caloriesJson.labelNutrients.calories.value
+            setFdaData(`${caloriesData}`)
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleBarCodeScanned = async ({ type, data }) => {
         setScanned(true);
-        alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+        // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+        //const nr = new NutritionRetrieval(data);
+        //nr.getNutrition();
+        await getNutrition(data)
+        if (!isLoading) {
+            alert(`FDA data for ${foodName} calorie is ${fdaData}`);
+        }
     };
 
     if (hasPermission === null) {
@@ -35,13 +79,13 @@ export default function CameraPage() {
     }
 
     return (
-    <View style={styles.container}>
-        <BarCodeScanner
-            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-            style={StyleSheet.absoluteFillObject}
-        />
-        {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
-    </View>
+        <View style={styles.container}>
+            <BarCodeScanner
+                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                style={StyleSheet.absoluteFillObject}
+            />
+            {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
+        </View>
     );
 }
 
@@ -52,101 +96,3 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-
-// const CameraPage = ({ navigation: { navigate, goBack } }) => {
-//     // const cameraRef = useRef(null);
-//     const [startCamera, setStartCamera] = React.useState(false)
-//     // const [capturedImage, setCapturedImage] = React.useState<any>(null)
-//     const [hasPermission, setHasPermission] = useState(null);
-//     const [type, setType] = useState(Camera.Constants.Type.back);
-
-//     useEffect(() => {
-//     (async () => {
-//         const { status } = await Camera.requestPermissionsAsync();
-//         setHasPermission(status === 'granted');
-//         // cameraRef.current = this;
-//     })();
-//     }, []);
-
-//     if (hasPermission === null) {
-//     return <View />;
-//     }
-//     if (hasPermission === false) {
-//     return <Text>No access to camera</Text>;
-//     }
-
-//     const onSnap = () => {
-//     //     if (Camera) {
-//     //         this.Camera.takePictureAsync({ onPictureSaved: onPictureSaved });
-//     //     }
-//     // };
-//         // const photo: any = await camera.takePictureAsync()
-//         // console.log(photo)
-//         // setPreviewVisible(true)
-//         // //setStartCamera(false)
-//         // setCapturedImage(photo)
-//     }
-      
-//     const onPictureSaved = photo => {
-//         console.log(photo);
-//     } 
-
-//     return (
-//         <View style={styles.container}>
-//             <Camera style={styles.camera} type={type}  >
-//             <View style={styles.buttonContainer}>
-//                 <TouchableOpacity
-//                     style={styles.button}
-//                     onPress={() => {
-//                         setType(
-//                         type === Camera.Constants.Type.back
-//                             ? Camera.Constants.Type.front
-//                             : Camera.Constants.Type.back
-//                         );
-//                     }}>
-//                     <Text style={styles.text}> Flip </Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity style={styles.button} onPress={onSnap}>
-//                     <Text style={styles.text}> Take Picture </Text>
-//                 </TouchableOpacity>
-//             </View>
-//             </Camera>
-//         </View>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//     },
-//     camera: {
-//         flex: 1,
-//     },
-//     buttonContainer: {
-//         flex: 1,
-//         backgroundColor: 'transparent',
-//         flexDirection: 'row',
-//         margin: 20,
-//     },
-//     button: {
-//         flex:1,
-//         alignSelf: 'flex-end',
-//         alignItems: 'center'
-//     },
-//     text: {
-//         fontSize: 18,
-//         color: 'white',
-//     },
-//     captureBtnText: {
-//         fontSize: 18,
-//         color: 'black',
-//     },
-//     CircleShapeView: {
-//         width: 50,
-//         height: 50,
-//         borderRadius: 50 / 2,
-//         backgroundColor: '#fff',
-//     },
-// });
-
-// <Text style={styles.captureBtnText}> Take Picture </Text>
