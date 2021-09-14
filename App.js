@@ -20,16 +20,6 @@ export default function App() {
             </Stack.Navigator>
         </NavigationContainer>
     );
-    // return (
-    //     <View style={styles.container}>
-    //         <SignInPage />
-    //     </View>
-    // );
-    // return (
-    //     <View style={styles.container}>
-    //     <Text>Hi</Text>
-    //     </View>
-    // );
 }
 
 const styles = StyleSheet.create({
