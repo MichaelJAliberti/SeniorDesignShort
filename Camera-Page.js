@@ -6,7 +6,8 @@ import {
     TextInput, 
     StyleSheet,
     Button,
-    TouchableOpacity } from "react-native";
+    TouchableOpacity,
+    LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db } from './firebaseConfig'
 
@@ -66,12 +67,18 @@ export default function CameraPage({ navigation: { navigate } }) {
         }
     }
 
+    const formatUpc = (upc) => {
+        if (upc.length > 12) {
+            return upc.substring(1)
+        }
+    }
+
     const handleBarCodeScanned = async ({ type, data }) => {
         setScanned(true);
         // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
         //const nr = new NutritionRetrieval(data);
         //nr.getNutrition();
-        await getNutrition(data)
+        await getNutrition(formatUpc(data))
         // if (!isLoading) {
         //     alert(`FDA data for ${foodName} calorie is ${fdaData}`);
         // }
