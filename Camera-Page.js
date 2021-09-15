@@ -8,15 +8,16 @@ import {
     Button,
     TouchableOpacity } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
-//import NutritionRetrieval from './nutrition_retrieval'
 import { db } from './firebaseConfig'
+
+LogBox.ignoreLogs(['Setting a timer'])
 
 export default function CameraPage({ navigation: { navigate } }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
-    const [fdaData, setFdaData] = useState([]);
-    const [foodName, setFood] =  useState([]);
+    // const [fdaData, setFdaData] = useState([]);
+    // const [foodName, setFood] =  useState([]);
 
     useEffect(() => {
         (async () => {
@@ -40,7 +41,8 @@ export default function CameraPage({ navigation: { navigate } }) {
             );
             let fdcNumJson = await fdcNumResponse.json();
             const foodData = fdcNumJson.foods[0]
-            setFood(`${foodData.description}`)
+            // setFood(`${foodData.description}`)
+            const foodDescription = foodData.description
             let fdcId = foodData.fdcId
 
             const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
@@ -52,7 +54,11 @@ export default function CameraPage({ navigation: { navigate } }) {
             );
             let caloriesJson = await caloriesResponse.json();
             const caloriesData = caloriesJson.labelNutrients.calories.value
-            setFdaData(`${caloriesData}`)
+
+            // CHANGE THIS ALERT TO A POP-UP TRIGGER
+            alert(`${foodDescription} is ${caloriesData} calories per serving`);
+            
+            // setFdaData(`${caloriesData}`)
         } catch (error) {
             console.error(error);
         } finally {
@@ -66,9 +72,9 @@ export default function CameraPage({ navigation: { navigate } }) {
         //const nr = new NutritionRetrieval(data);
         //nr.getNutrition();
         await getNutrition(data)
-        if (!isLoading) {
-            alert(`FDA data for ${foodName} calorie is ${fdaData}`);
-        }
+        // if (!isLoading) {
+        //     alert(`FDA data for ${foodName} calorie is ${fdaData}`);
+        // }
     };
 
     if (hasPermission === null) {
