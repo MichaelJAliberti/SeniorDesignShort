@@ -22,9 +22,17 @@ export default function CameraPage() {
     })();
     }, []);
 
+    const formatUpc = (upc) => {
+        if (upc.length > 12) {
+            alert(`${upc.length}`)
+            return upc.substring(1)
+        }
+    }
+
     const handleBarCodeScanned = ({ type, data }) => {
         setScanned(true);
-        alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+        const formattedData = formatUpc(data)
+        alert(`Bar code with type ${type} and data ${formattedData} has been scanned!`);
     };
 
     if (hasPermission === null) {
