@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, StyleSheet, Button } from "react-native";
+import { SafeAreaView, StyleSheet, Button, ImageBackground } from "react-native";
 import * as Google from 'expo-google-app-auth';
 import * as firebase from 'firebase';
 
@@ -7,20 +7,22 @@ export default function SignInPage({ navigation: { navigate } }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Button
-                title='SIGN-IN WITH GOOGLE'
-                style={styles.button}
-                onPress={
-                    async () => {
-                        var result = await signInWithGoogleAsync();
-                        if (result.cancelled || result.error){
-                            alert('Login failed');
-                        } else {
-                            navigate('Recipes');
+            <ImageBackground source={require('./FoodBoarder.jpg')}  style={styles.image}>
+                <Button
+                    title='SIGN-IN WITH GOOGLE'
+                    style={styles.button}
+                    onPress={
+                        async () => {
+                            var result = await signInWithGoogleAsync();
+                            if (result.cancelled || result.error){
+                                alert('Login failed');
+                            } else {
+                                navigate('Recipes');
+                            }
                         }
                     }
-                }
-            />
+                />
+            </ImageBackground>
         </SafeAreaView>
     )
 }
@@ -89,12 +91,11 @@ function isUserEqual(googleUser, firebaseUser) {
 }
 
 const styles = StyleSheet.create ({
-    input : {
-        height: 40,
-        width: 200,
-        margin: 5,
-        borderWidth: 1,
-        padding: 10
+    button : {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     container: {
         flex: 1,
@@ -102,6 +103,10 @@ const styles = StyleSheet.create ({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    button : {
+    image: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
     }
 }); 
