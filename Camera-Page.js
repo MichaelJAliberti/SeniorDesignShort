@@ -6,7 +6,8 @@ import {
     TextInput, 
     StyleSheet,
     Button,
-    TouchableOpacity } from "react-native";
+    TouchableOpacity, 
+    LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db } from './firebaseConfig'
 
@@ -16,8 +17,6 @@ export default function CameraPage({ navigation: { navigate } }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
-    // const [fdaData, setFdaData] = useState([]);
-    // const [foodName, setFood] =  useState([]);
 
     useEffect(() => {
         (async () => {
@@ -41,7 +40,6 @@ export default function CameraPage({ navigation: { navigate } }) {
             );
             let fdcNumJson = await fdcNumResponse.json();
             const foodData = fdcNumJson.foods[0]
-            // setFood(`${foodData.description}`)
             const foodDescription = foodData.description
             let fdcId = foodData.fdcId
 
@@ -57,8 +55,6 @@ export default function CameraPage({ navigation: { navigate } }) {
 
             // CHANGE THIS ALERT TO A POP-UP TRIGGER
             alert(`${foodDescription} is ${caloriesData} calories per serving`);
-            
-            // setFdaData(`${caloriesData}`)
         } catch (error) {
             console.error(error);
         } finally {
@@ -68,13 +64,7 @@ export default function CameraPage({ navigation: { navigate } }) {
 
     const handleBarCodeScanned = async ({ type, data }) => {
         setScanned(true);
-        // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-        //const nr = new NutritionRetrieval(data);
-        //nr.getNutrition();
         await getNutrition(data)
-        // if (!isLoading) {
-        //     alert(`FDA data for ${foodName} calorie is ${fdaData}`);
-        // }
     };
 
     if (hasPermission === null) {
