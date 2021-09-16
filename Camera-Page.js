@@ -2,18 +2,16 @@ import React, { Component, useState, useEffect } from "react";
 import { 
     View, 
     Text, 
-    SafeAreaView, 
-    TextInput, 
     StyleSheet,
     Button,
-    TouchableOpacity,
+    Alert,
     LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db } from './firebaseConfig'
 
 LogBox.ignoreLogs(['Setting a timer'])
 
-export default function CameraPage({ navigation: { navigate } }) {
+export default function CameraPage({ navigation }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
@@ -26,6 +24,17 @@ export default function CameraPage({ navigation: { navigate } }) {
             setHasPermission(status === 'granted');
         })();
     }, []);
+
+    const keepIngredientAlert = (foodDescription, caloriesData) =>
+        Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
+            [{  
+                text: "Cancel",
+                style: "cancel" 
+            },  
+            {   
+                text: "OK", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
+            }]
+    );
 
     const getNutrition = async (upc) => {
         try {
@@ -57,8 +66,10 @@ export default function CameraPage({ navigation: { navigate } }) {
             const caloriesData = caloriesJson.labelNutrients.calories.value
 
             // CHANGE THIS ALERT TO A POP-UP TRIGGER
-            alert(`${foodDescription} is ${caloriesData} calories per serving`);
-            
+            // alert(`${foodDescription} is ${caloriesData} calories per serving`);
+
+            keepIngredientAlert(foodDescription, caloriesData);
+
             // setFdaData(`${caloriesData}`)
         } catch (error) {
             console.error(error);
@@ -70,15 +81,17 @@ export default function CameraPage({ navigation: { navigate } }) {
     const formatUpc = (upc) => {
         if (upc.length > 12) {
             return upc.substring(1)
-        }
+        } else if (upc.length == 12)
+            return upc
     }
 
     const handleBarCodeScanned = async ({ type, data }) => {
-        setScanned(true);
         // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
         //const nr = new NutritionRetrieval(data);
         //nr.getNutrition();
+        setScanned(true);
         await getNutrition(formatUpc(data))
+
         // if (!isLoading) {
         //     alert(`FDA data for ${foodName} calorie is ${fdaData}`);
         // }
@@ -97,7 +110,9 @@ export default function CameraPage({ navigation: { navigate } }) {
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
             />
-            {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
+            {   
+                scanned &&  <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
+            }
         </View>
     );
 }

@@ -6,7 +6,6 @@ import {
     TextInput, 
     StyleSheet,
     Button } from "react-native";
-import RecipeHistoryPage from './Recipe-History-Page'
 
 export default function SignInPage({ navigation: { navigate } }) {
     const [text, onChangeText] = React.useState("Useless Text");

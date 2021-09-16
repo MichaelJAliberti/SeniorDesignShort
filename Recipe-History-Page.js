@@ -17,31 +17,68 @@ const actions = [
     }
 ];
 
-const FlatListBasics = () => {
-    return (
-      <View style={styles.listContainer}>
-        <FlatList
-          data={[
-            {key: 'hamberder'},
-            {key: 'big mac'},
-            {key: 'more hamberders'},
-            {key: 'covfefe'},
-          ]}
-          renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
-        />
-      </View>
-    );
-  }
+// const FlatListBasics = (DATA) => {
+//     return (
+//         <View style={styles.listContainer}>
+//         <FlatList
+//             // data={[
+//             // {key: 'hamberder'},
+//             // {key: 'big mac'},
+//             // {key: 'more hamberders'},
+//             // {key: 'covfefe'},
+//             // ]}
+//             data={DATA}
+//             // renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+//             renderItem={({ item }) => <Text>{item}</Text>}
+//         />
+//         </View>
+//     );
+//   }
 
-  export default function RecipeHistoryPage ({ navigation: { navigate, goBack } }) {
+export default function RecipeHistoryPage ({route, navigation, goBack}) {
+    const [recipeMap, setRecipeMap] = React.useState(
+        [
+            {key: "Text 1"},
+            {key: "Text 2"},
+            {key: "Text 3"},
+            {key: "Text 4"},
+            {key: "Text 5"},
+        ]
+    )
+
     const onPressAddRecipe = () => {
-        navigate('Camera')
+        navigation.navigate('Camera')
     }
 
+    if (route.params != undefined) {
+        console.log("route is")
+
+        let { runningCalorieSum } = route.params
+        let { recipeName } = route.params
+        setRecipeMap(
+            {
+                recipeMap,
+                [recipeName] :  runningCalorieSum
+            }
+        )
+    } 
+    
     return (
         <SafeAreaView style={styles.container}>
             <Button title="Back to Login" onPress={() => goBack()} />
-            <FlatListBasics />
+            <View style={styles.listContainer}>
+            <FlatList
+                // data={[
+                // {key: 'hamberder'},
+                // {key: 'big mac'},
+                // {key: 'more hamberders'},
+                // {key: 'covfefe'},
+                // ]}
+                data={recipeMap}
+                // renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+                renderItem={({ item }) => <Text>{item}</Text>}
+            />
+            </View>
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )
@@ -60,7 +97,9 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         flex: 1,
-        paddingTop: 22
+        paddingTop: 22,
+        // flexDirection: "row",
+        borderRadius:5
     },
     item: {
         padding: 10,
