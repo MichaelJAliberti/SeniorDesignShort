@@ -2,6 +2,7 @@ import React from "react";
 import { SafeAreaView, StyleSheet, Button, ImageBackground } from "react-native";
 import * as Google from 'expo-google-app-auth';
 import * as firebase from 'firebase';
+import { db, auth } from './firebaseConfig';
 
 export default function SignInPage({ navigation: { navigate } }) {
 
@@ -18,6 +19,7 @@ export default function SignInPage({ navigation: { navigate } }) {
                                 alert('Login failed');
                             } else {
                                 navigate('Recipes');
+                                alert('Login succeeded');
                             }
                         }
                     }
@@ -47,28 +49,37 @@ async function signInWithGoogleAsync() {
 }
 
 function onSignIn(googleUser) {
-    // We need to register an Observer on Firebase Auth to make sure auth is initialized.
-    var unsubscribe = firebase.auth().onAuthStateChanged((firebaseUser) => {
+    var unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
         unsubscribe();
-        // Check if we are already signed-in Firebase with the correct user.
         if (!isUserEqual(googleUser, firebaseUser)) {
-            // Build Firebase credential with the Google ID token.
+            // Build Firebase credential with the Google user info.
             var credential = firebase.auth.GoogleAuthProvider.credential(
                 googleUser.idToken,
                 googleUser.accessToken
             );
   
             // Sign in with credential from the Google user.
-            firebase.auth().signInWithCredential(credential).catch((error) => {
-                // Handle Errors here.
-                var errorCode = error.code;
-                var errorMessage = error.message;
-                // The email of the user's account used.
-                var email = error.email;
-                // The firebase.auth.AuthCredential type that was used.
-                var credential = error.credential;
-                // ...
-            });
+            try {
+                auth.signInWithCredential(credential).then(
+                    user => {
+                        if (user.additionalUserInfo.isNewUser) {
+                            const recipesRef = db.collection('UserRecipes')
+
+                            recipesRef.doc(auth.currentUser.email).set(
+                                {
+                                    ownerId: auth.currentUser.uid
+                                }
+                            );
+                            console.log('Successfully signed in new user to Firebase.');
+                        } else {
+                            console.log('Successfully signed in existing user to Firebase.');
+                        }
+                    }
+                );
+            }
+            catch (error) {
+                console.log('Error signing user in to Firebase.');
+            }
         } else {
             console.log('User already signed-in Firebase.');
         }
