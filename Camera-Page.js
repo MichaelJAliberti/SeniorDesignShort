@@ -13,7 +13,8 @@ import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
-export default function CameraPage({ navigation: { navigate } }) {
+export default function CameraPage({ route, navigate}) {
+    const recipeName = route.params.name
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignInPage from './Sign-In-Page'
 import RecipeHistoryPage from './Recipe-History-Page'
 import CameraPage from './Camera-Page'
+import RecipeName from './Recipe-Name'
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +15,7 @@ export default function App() {
                 <Stack.Screen name="Login" component={SignInPage} />
                 <Stack.Screen name="Recipes" component={RecipeHistoryPage} />
                 <Stack.Screen name="Camera" component={CameraPage} />
+                <Stack.Screen name="RecipeName" component={RecipeName} />
             </Stack.Navigator>
         </NavigationContainer>
     );
