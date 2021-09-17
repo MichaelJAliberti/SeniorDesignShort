@@ -7,13 +7,14 @@ import {
     Alert,
     LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import * as firebase from 'firebase';
 import PromptForServingsPage from "./Servings-Prompt";
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
 export default function CameraPage({ route, navigate}) {
-    const recipeName = route.params.name
+    const recipeName = route.params.recipeName
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
@@ -23,11 +24,9 @@ export default function CameraPage({ route, navigate}) {
 
     useEffect(() => {
         db.collection('UserRecipes').doc(auth.currentUser.email).update({
-            'recipes': {
-                'recipe': {
-                    'ingredients': {},
-                    'calories': 0
-                }
+            [`recipes.${recipeName}`]: {
+                'ingredients': {},
+                'calories': 0
             }
         });
         (async () => {
@@ -42,17 +41,19 @@ export default function CameraPage({ route, navigate}) {
             setFoodName(foodDescription) 
             setFoodName((foodName) => {
                 Alert.alert( `Scanned ${foodName} with ${calories} calories per serving`, "Use ingredient?",
-                    [{  
-                        text: "Discard",
-                        style: "cancel" 
-                    },  
-                    {   
-                        text: "Keep", onPress: () => setShowServingsPage(true)
-                    }]
+                    [
+                        {  
+                            text: "Discard",
+                            style: "cancel" 
+                        },  
+                        {   
+                            text: "Keep", onPress: () => setShowServingsPage(true)
+                        }
+                    ]
                 );
             })
         })
-        }
+    }
 
     const getNutrition = async (upc) => {
         try {
@@ -86,25 +87,15 @@ export default function CameraPage({ route, navigate}) {
                 }
             );
             let caloriesJson = await caloriesResponse.json();
-            const caloriesData = caloriesJson.labelNutrients.calories.value
-            
-            //keepIngredientAlert(foodDescription, caloriesData);\
-
-            let recipeDoc = await db.collection('UserRecipes').doc(auth.currentUser.email);
-            let recipeSnapshot = await recipeDoc.get();
-            let recipeFields = await recipeSnapshot.data();
-            let prevCals = recipeFields.recipes.recipe.calories;
+            const caloriesData = caloriesJson.labelNutrients.calories.value;
 
             recipeDoc.update({
-                'recipes': {
-                    'recipe': {
-                        'ingredients': {
-                            [foodDescription]: '1 serving'
-                        },
-                        'calories': prevCals + caloriesData
-                    }
-                }
+                [`recipes.${recipeName}.ingredients`]: {
+                    [foodDescription]: '1 serving'
+                },
+                [`recipes.${recipeName}.calories`]: firebase.firestore.FieldValue.increment(caloriesData)
             });
+            // keepIngredientAlert(foodDescription, caloriesData);
         } catch (error) {
             console.error(error);
         } finally {
