@@ -5,9 +5,8 @@ import {
     StyleSheet,
     Button,
     Alert,
-    TouchableOpacity, 
     LogBox } from "react-native";
-import { BarCodeScanner } from 'expo-barcode-scanner'
+import { BarCodeScanner } from 'expo-barcode-scanner';
 import PromptForServingsPage from "./Servings-Prompt";
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
@@ -22,6 +21,14 @@ export default function CameraPage({ navigation }) {
     const [showServingsPage, setShowServingsPage] = useState(false)
 
     useEffect(() => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).update({
+            'recipes': {
+                'recipe': {
+                    'ingredients': {},
+                    'calories': 0
+                }
+            }
+        });
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
@@ -39,7 +46,6 @@ export default function CameraPage({ navigation }) {
                         style: "cancel" 
                     },  
                     {   
-                        // text: "Keep", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
                         text: "Keep", onPress: () => setShowServingsPage(true)
                     }]
                 );
@@ -80,22 +86,24 @@ export default function CameraPage({ navigation }) {
             );
             let caloriesJson = await caloriesResponse.json();
             const caloriesData = caloriesJson.labelNutrients.calories.value
-
-            // CHANGE THIS ALERT TO A POP-UP TRIGGER
-            // alert(`${foodDescription} is ${caloriesData} calories per serving`);
             
-            keepIngredientAlert(foodDescription, caloriesData);
+            //keepIngredientAlert(foodDescription, caloriesData);\
 
-            // setFdaData(`${caloriesData}`)
-            db.collection('UserRecipes').doc(auth.currentUser.email).update({
-                'Food': {
-                    'Ingredients': [
-                        foodDescription
-                    ],
-                    'Calories': caloriesData
+            let recipeDoc = await db.collection('UserRecipes').doc(auth.currentUser.email);
+            let recipeSnapshot = await recipeDoc.get();
+            let recipeFields = await recipeSnapshot.data();
+            let prevCals = recipeFields.recipes.recipe.calories;
+
+            recipeDoc.update({
+                'recipes': {
+                    'recipe': {
+                        'ingredients': {
+                            [foodDescription]: '1 serving'
+                        },
+                        'calories': prevCals + caloriesData
+                    }
                 }
             });
-
         } catch (error) {
             console.error(error);
         } finally {

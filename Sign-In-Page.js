@@ -67,7 +67,8 @@ function onSignIn(googleUser) {
 
                             recipesRef.doc(auth.currentUser.email).set(
                                 {
-                                    ownerId: auth.currentUser.uid
+                                    ownerId: auth.currentUser.uid,
+                                    recipes: {}
                                 }
                             );
                             console.log('Successfully signed in new user to Firebase.');
