@@ -8,6 +8,7 @@ import {
     LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db } from './firebaseConfig'
+import PromptForServingsPage from "./Servings-Prompt";
 
 LogBox.ignoreLogs(['Setting a timer'])
 
@@ -15,8 +16,9 @@ export default function CameraPage({ navigation }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
-    // const [fdaData, setFdaData] = useState([]);
-    // const [foodName, setFood] =  useState([]);
+    const [calories, setCalories] = useState(0);
+    const [foodName, setFoodName] =  useState("Useless Text");
+    const [showServingsPage, setShowServingsPage] = useState(false)
 
     useEffect(() => {
         (async () => {
@@ -25,16 +27,24 @@ export default function CameraPage({ navigation }) {
         })();
     }, []);
 
-    const keepIngredientAlert = (foodDescription, caloriesData) =>
-        Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
-            [{  
-                text: "Discard",
-                style: "cancel" 
-            },  
-            {   
-                text: "Keep", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
-            }]
-    );
+    const keepIngredientAlert = (foodDescription, caloriesData) => {
+        setCalories(caloriesData)
+        setCalories((calories) => {
+            setFoodName(foodDescription) 
+            setFoodName((foodName) => {
+                Alert.alert( `Scanned ${foodName} with ${calories} calories per serving`, "Use ingredient?",
+                    [{  
+                        text: "Discard",
+                        style: "cancel" 
+                    },  
+                    {   
+                        // text: "Keep", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
+                        text: "Keep", onPress: () => setShowServingsPage(true)
+                    }]
+                );
+            })
+        })
+        }
 
     const getNutrition = async (upc) => {
         try {
@@ -67,7 +77,7 @@ export default function CameraPage({ navigation }) {
 
             // CHANGE THIS ALERT TO A POP-UP TRIGGER
             // alert(`${foodDescription} is ${caloriesData} calories per serving`);
-
+            
             keepIngredientAlert(foodDescription, caloriesData);
 
             // setFdaData(`${caloriesData}`)
@@ -86,15 +96,8 @@ export default function CameraPage({ navigation }) {
     }
 
     const handleBarCodeScanned = async ({ type, data }) => {
-        // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-        //const nr = new NutritionRetrieval(data);
-        //nr.getNutrition();
         setScanned(true);
         await getNutrition(formatUpc(data))
-
-        // if (!isLoading) {
-        //     alert(`FDA data for ${foodName} calorie is ${fdaData}`);
-        // }
     };
 
     if (hasPermission === null) {
@@ -112,6 +115,9 @@ export default function CameraPage({ navigation }) {
             />
             {   
                 scanned &&  <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
+            }
+            { 
+                showServingsPage && <PromptForServingsPage foodName={foodName} calories={calories} /> 
             }
         </View>
     );

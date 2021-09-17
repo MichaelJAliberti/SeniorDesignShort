@@ -6,11 +6,15 @@ import {
     StyleSheet,
     Button,
     Alert } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 
-export default function PromptForServingsPage({route, navigation}) { 
+// export default function PromptForServingsPage({route, navigation}) {
+export default function PromptForServingsPage(props) { 
     // Assign the ingredient name and its number of calories to identifiers
-    const { food_name } = route.params
-    const { calorie_count } = route.params
+    const { food_name } = props.foodName
+    const { calorie_count } = props.calories
+    // const { navigate } = props.navigate
+    const navigation = useNavigation();
 
     // State variables 
     const [servings, setServings] = React.useState(0);
@@ -19,11 +23,15 @@ export default function PromptForServingsPage({route, navigation}) {
 
     // Callback function serving-prompt-submit button. This part updates the runningCalorieSum state hook.
     const onPressSubmit = () => {
+        alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${calorie_count}`)
         setTotalCalories(runningCalorieSum + calorie_count * servings)
         setTotalCalories((runningCalorieSum) => {
-            addIngredientsAlert(runningCalorieSum)
+            // alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${calorie_count}`)
+            // addIngredientsAlert(runningCalorieSum)
         });
     }
+    
+
 
     // This part updates the recipeName state hook
     // Helper function that asks user if they would like to add another ingredient or finish the recipe
@@ -42,11 +50,12 @@ export default function PromptForServingsPage({route, navigation}) {
                                 onPress: (recipeName) => {
                                     setRecipeName(recipeName)
                                     setRecipeName((recipeName) => {
-                                        // alert(`calorie sum is ${runningCalorieSum} and name is ${recipeName}`)
-                                        navigation.navigate('Recipes', {
-                                            sum : runningCalorieSum,
-                                            name : recipeName
-                                        })
+                                        alert(`calorie sum is ${runningCalorieSum} and name is ${recipeName}`)
+                                        // database stuff goes here. Pass info to database.
+                                        // navigation.navigate('Recipes', {
+                                        //     sum : runningCalorieSum,
+                                        //     name : recipeName
+                                        // })
                                     });
                                 }
                             }]
