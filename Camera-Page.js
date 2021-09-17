@@ -5,6 +5,7 @@ import {
     StyleSheet,
     Button,
     Alert,
+    TouchableOpacity, 
     LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db } from './firebaseConfig'
@@ -61,7 +62,6 @@ export default function CameraPage({ navigation }) {
             );
             let fdcNumJson = await fdcNumResponse.json();
             const foodData = fdcNumJson.foods[0]
-            // setFood(`${foodData.description}`)
             const foodDescription = foodData.description
             let fdcId = foodData.fdcId
 
