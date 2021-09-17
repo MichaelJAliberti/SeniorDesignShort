@@ -88,7 +88,6 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
             firebase.auth().signOut();
             goBack();
         }} />
-            <FlatListBasics />
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )

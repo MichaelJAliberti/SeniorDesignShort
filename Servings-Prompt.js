@@ -11,8 +11,8 @@ import { useNavigation } from '@react-navigation/native';
 // export default function PromptForServingsPage({route, navigation}) {
 export default function PromptForServingsPage(props) { 
     // Assign the ingredient name and its number of calories to identifiers
-    const { food_name } = props.foodName
-    const { calorie_count } = props.calories
+    // const { food_name } = props.foodName
+    // const { calorie_count } = props.calories
     // const { navigate } = props.navigate
     const navigation = useNavigation();
 
@@ -23,11 +23,11 @@ export default function PromptForServingsPage(props) {
 
     // Callback function serving-prompt-submit button. This part updates the runningCalorieSum state hook.
     const onPressSubmit = () => {
-        alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${calorie_count}`)
-        setTotalCalories(runningCalorieSum + calorie_count * servings)
+        // alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${props.calories}`)
+        setTotalCalories(runningCalorieSum + props.calories * servings)
         setTotalCalories((runningCalorieSum) => {
-            // alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${calorie_count}`)
-            // addIngredientsAlert(runningCalorieSum)
+            // alert(`calorie sum is ${runningCalorieSum} number of servings is ${servings} and calorie count is ${props.calories}`)
+            addIngredientsAlert(runningCalorieSum)
         });
     }
     
@@ -52,10 +52,10 @@ export default function PromptForServingsPage(props) {
                                     setRecipeName((recipeName) => {
                                         alert(`calorie sum is ${runningCalorieSum} and name is ${recipeName}`)
                                         // database stuff goes here. Pass info to database.
-                                        // navigation.navigate('Recipes', {
-                                        //     sum : runningCalorieSum,
-                                        //     name : recipeName
-                                        // })
+                                        navigation.navigate('Recipes', {
+                                            sum : runningCalorieSum,
+                                            name : recipeName
+                                        })
                                     });
                                 }
                             }]
@@ -71,10 +71,10 @@ export default function PromptForServingsPage(props) {
     return (
         <SafeAreaView style={styles.container}>
             <Text>
-                Enter the number of servings of {food_name} you would like to add.
+                Enter the number of servings of {props.foodName} you would like to add.
             </Text>
             <Text>
-                **Note** This item has {calorie_count} calories per serving.{"\n"}
+                **Note** This item has {props.calories} calories per serving.{"\n"}
             </Text>
             <TextInput 
                 style={styles.input}
