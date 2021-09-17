@@ -9,7 +9,7 @@ import {
     TouchableOpacity, 
     LogBox } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { projecFirebaseUrl } from './firebaseConfig';
+import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
@@ -61,6 +61,15 @@ export default function CameraPage({ navigation: { navigate } }) {
 
             // CHANGE THIS ALERT TO A POP-UP TRIGGER
             alert(`${foodDescription} is ${caloriesData} calories per serving`);
+            db.collection('UserRecipes').doc(auth.currentUser.email).update({
+                'Food': {
+                    'Ingredients': [
+                        foodDescription
+                    ],
+                    'Calories': caloriesData
+                }
+            });
+
         } catch (error) {
             console.error(error);
         } finally {

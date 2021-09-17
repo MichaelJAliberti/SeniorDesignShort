@@ -2,6 +2,7 @@ import React from "react";
 import { SafeAreaView, StyleSheet, Button, ImageBackground } from "react-native";
 import * as Google from 'expo-google-app-auth';
 import * as firebase from 'firebase';
+import { db, auth } from './firebaseConfig';
 
 export default function SignInPage({ navigation: { navigate } }) {
 
@@ -18,6 +19,7 @@ export default function SignInPage({ navigation: { navigate } }) {
                                 alert('Login failed');
                             } else {
                                 navigate('Recipes');
+                                alert('Login succeeded');
                             }
                         }
                     }
@@ -47,7 +49,7 @@ async function signInWithGoogleAsync() {
 }
 
 function onSignIn(googleUser) {
-    var unsubscribe = firebase.auth().onAuthStateChanged((firebaseUser) => {
+    var unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
         unsubscribe();
         if (!isUserEqual(googleUser, firebaseUser)) {
             // Build Firebase credential with the Google user info.
@@ -58,12 +60,14 @@ function onSignIn(googleUser) {
   
             // Sign in with credential from the Google user.
             try {
-                firebase.auth().signInWithCredential(credential).then(
+                auth.signInWithCredential(credential).then(
                     user => {
                         if (user.additionalUserInfo.isNewUser) {
-                            firebase.firestore().collection('UserRecipes').add(
+                            const recipesRef = db.collection('UserRecipes')
+
+                            recipesRef.doc(auth.currentUser.email).set(
                                 {
-                                    ownerId: firebase.auth().currentUser.uid
+                                    ownerId: auth.currentUser.uid
                                 }
                             );
                             console.log('Successfully signed in new user to Firebase.');

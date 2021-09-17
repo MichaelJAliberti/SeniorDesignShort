@@ -14,5 +14,6 @@ if (firebase.apps.length == 0) {
     firebase.initializeApp(firebaseConfig)
 }
 
-export const db = firebase.firestore()
-export const projecFirebaseUrl = 'https://firestore.googleapis.com/v1/projects/seniordesignminiproject-8b95f'
+export const db = firebase.firestore();
+export const auth = firebase.auth();
+export const projecFirebaseUrl = 'https://firestore.googleapis.com/v1/projects/seniordesignminiproject-8b95f';
