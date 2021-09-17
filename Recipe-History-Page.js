@@ -17,72 +17,80 @@ const actions = [
     }
 ];
 
-// const FlatListBasics = (DATA) => {
-//     return (
-//         <View style={styles.listContainer}>
-//         <FlatList
-//             // data={[
-//             // {key: 'hamberder'},
-//             // {key: 'big mac'},
-//             // {key: 'more hamberders'},
-//             // {key: 'covfefe'},
-//             // ]}
-//             data={DATA}
-//             // renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
-//             renderItem={({ item }) => <Text>{item}</Text>}
-//         />
-//         </View>
-//     );
-//   }
-
 export default function RecipeHistoryPage ({route, navigation, goBack}) {
-    const [recipeMap, setRecipeMap] = React.useState(
+    const [runningCalorieSum, setRunningCalorieSum] = React.useState(0);
+    const [recipeName, setRecipeName] = React.useState("Useless Text");
+    const [recipeMap, setRecipeList] = React.useState(
         [
-            {key: "Text 1"},
-            {key: "Text 2"},
-            {key: "Text 3"},
-            {key: "Text 4"},
-            {key: "Text 5"},
+            {   "recipeName": "chicken noodle soup",
+                "numCalories": 100
+            },
+            {   "recipeName": "fajitas",
+                "numCalories": 200
+            }
         ]
     )
+
+    // const { calorie_count } = route.params
+    // const { food_name } = ( route.params == undefined ) ? route.params
 
     const onPressAddRecipe = () => {
         navigation.navigate('Camera')
     }
 
     if (route.params != undefined) {
-        console.log("route is")
+        console.log(route)
+        // let { calorie_sum } = route.params
+        // let { recipe_name } = route.params
 
-        let { runningCalorieSum } = route.params
-        let { recipeName } = route.params
-        setRecipeMap(
-            {
-                recipeMap,
-                [recipeName] :  runningCalorieSum
-            }
-        )
+        // // setRunningCalorieSum(calorie_sum)
+        // // setRecipeName(recipe_name)
+        // // alert("don't go on linked in!")
+        // alert(`Recipe ${recipe_name} has ${calorie_sum} calories`)
+        // setRecipeList(
+        //     recipeMap => [...recipeMap,
+        //         {
+        //             "recipeName": recipe_name,
+        //             "numCalories": calorie_sum
+        //         } 
+        //     ]
+        // )
     } 
+
+    const Item = ({ title, description }) => (
+        <View>
+        <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`}>
+        </Button>
+        </View>
+    );
     
     return (
         <SafeAreaView style={styles.container}>
             <Button title="Back to Login" onPress={() => goBack()} />
             <View style={styles.listContainer}>
             <FlatList
-                // data={[
-                // {key: 'hamberder'},
-                // {key: 'big mac'},
-                // {key: 'more hamberders'},
-                // {key: 'covfefe'},
-                // ]}
-                data={recipeMap}
-                // renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
-                renderItem={({ item }) => <Text>{item}</Text>}
+                data={(route.params == undefined) ? recipeMap :
+                    [...recipeMap,
+                        {
+                            "recipeName": route.params.name,
+                            "numCalories": route.params.sum
+                        } 
+                    ]
+                }
+                renderItem={({ item }) => (
+                    <Item title={item.recipeName} description={item.numCalories} />
+                )}
+                keyExtractor={(item) => item.recipeName}
             />
             </View>
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )
 };
+
+// {(route.params != undefined) &&
+    //     <Text>SBFKARJFHRFHKJASHJ {calorie_sum} {recipe_name}</Text>
+    // }
 
 const styles = StyleSheet.create({
     fab: {

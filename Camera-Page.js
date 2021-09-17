@@ -28,11 +28,11 @@ export default function CameraPage({ navigation }) {
     const keepIngredientAlert = (foodDescription, caloriesData) =>
         Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
             [{  
-                text: "Cancel",
+                text: "Discard",
                 style: "cancel" 
             },  
             {   
-                text: "OK", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
+                text: "Keep", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
             }]
     );
 
