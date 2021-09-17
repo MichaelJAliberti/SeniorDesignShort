@@ -8,8 +8,8 @@ import {
     Button,
     TouchableOpacity, 
     LogBox } from "react-native";
-import { BarCodeScanner } from 'expo-barcode-scanner'
-import { db } from './firebaseConfig'
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
@@ -27,9 +27,15 @@ export default function CameraPage({ navigation: { navigate } }) {
 
     const getNutrition = async (upc) => {
         try {
-            const fdaResponse = db.collection('FdaRetrieval').doc('Fda');
-            const fdaDoc = await fdaResponse.get();
-            const fdaKey = `${fdaDoc.get('FdaApi')}`
+            const fdaKeyQuerry = `${projecFirebaseUrl}/databases/(default)/documents/FdaRetrieval/Fda`;
+            const fdaKeyResponse = await fetch(
+                fdaKeyQuerry,
+                {
+                    method: 'GET'
+                }
+            );
+            let fdaKeyJson = await fdaKeyResponse.json();
+            const fdaKey = fdaKeyJson.fields.FdaApi.stringValue;
 
             const fdcNumQuerry = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${upc}&api_key=${fdaKey}`
             const fdcNumResponse = await fetch(

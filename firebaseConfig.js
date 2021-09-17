@@ -15,3 +15,4 @@ if (firebase.apps.length == 0) {
 }
 
 export const db = firebase.firestore()
+export const projecFirebaseUrl = 'https://firestore.googleapis.com/v1/projects/seniordesignminiproject-8b95f'
