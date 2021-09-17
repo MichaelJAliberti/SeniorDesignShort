@@ -8,6 +8,7 @@ import {
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
+import * as firebase from 'firebase';
 
 const actions = [
     {
@@ -40,7 +41,10 @@ const FlatListBasics = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Button title="Back to Login" onPress={() => goBack()} />
+        <Button title="Sign Out" onPress={() => {
+            firebase.auth().signOut();
+            goBack();
+        }} />
             <FlatListBasics />
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
