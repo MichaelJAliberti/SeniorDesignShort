@@ -36,7 +36,8 @@ const FlatListBasics = () => {
 
   export default function RecipeHistoryPage ({ navigation: { navigate, goBack } }) {
     const onPressAddRecipe = () => {
-        navigate('Camera')
+        // navigate('Camera')
+        navigate('RecipeName')
     }
 
     return (
