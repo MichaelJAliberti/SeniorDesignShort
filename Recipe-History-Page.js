@@ -8,6 +8,7 @@ import {
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
+import * as firebase from 'firebase';
 
 const actions = [
     {
@@ -83,6 +84,11 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
                 keyExtractor={(item) => item.recipeName}
             />
             </View>
+        <Button title="Sign Out" onPress={() => {
+            firebase.auth().signOut();
+            goBack();
+        }} />
+            <FlatListBasics />
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )
