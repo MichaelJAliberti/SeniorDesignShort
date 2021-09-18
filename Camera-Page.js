@@ -16,7 +16,7 @@ LogBox.ignoreLogs(['Setting a timer'])
 
 export default function CameraPage({ route, navigation}) {
     // Recipe Name passed from the Recipe Name Page
-    // const { recipeName } = route.params
+    const [recipeName, ] = useState(route.params.name);
 
     // Camera States
     const [hasPermission, setHasPermission] = useState(null);
@@ -24,7 +24,6 @@ export default function CameraPage({ route, navigation}) {
     const [scanned, setScanned] = useState(false);
 
     // Servings Prompt Hooks
-    const [recipeName, ] = useState(route.params.name);
     const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
     const [showServingsPage, setShowServingsPage] = useState(false)
@@ -36,10 +35,6 @@ export default function CameraPage({ route, navigation}) {
         setFoodName(foodName)
     }, [foodName])
 
-    // useEffect(() => {
-    //     setTotalCalories(prevTotal => (prevTotal + calories * servings))
-    // }, [calories])
-
     useEffect(() => {
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
@@ -47,12 +42,7 @@ export default function CameraPage({ route, navigation}) {
         })();
     }, []);
 
-    // Add another ingredient to the recipe? 
-    // calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}
-    // and recipe name is ${recipeName}`
-
     const onPressServingsSubmit = () => {
-        // alert(`HERERER calorie sum is ${totalCalories}`) 
         setTotalCalories(prevTotal => (prevTotal + calories * servings))
         Alert.alert(  "Ingredients:", `Item added successfully.`,
             [{  
@@ -61,6 +51,14 @@ export default function CameraPage({ route, navigation}) {
 
                 onPress: () => {
                     setTotalCalories((totalCalories) => {
+                        db.collection('UserRecipes').doc(auth.currentUser.email).update({
+                            'Food': {
+                                'Ingredients': [
+                                    foodDescription
+                                ],
+                                'Calories': caloriesData
+                            }
+                        });
                         navigation.navigate('Recipes', {
                             sum : totalCalories,
                             name : recipeName
@@ -155,14 +153,14 @@ export default function CameraPage({ route, navigation}) {
             keepIngredientAlert(foodDescription, caloriesData);
 
             // setFdaData(`${caloriesData}`)
-            db.collection('UserRecipes').doc(auth.currentUser.email).update({
-                'Food': {
-                    'Ingredients': [
-                        foodDescription
-                    ],
-                    'Calories': caloriesData
-                }
-            });
+            // db.collection('UserRecipes').doc(auth.currentUser.email).update({
+            //     'Food': {
+            //         'Ingredients': [
+            //             foodDescription
+            //         ],
+            //         'Calories': caloriesData
+            //     }
+            // });
 
         } catch (error) {
             console.error(error);
