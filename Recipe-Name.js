@@ -7,7 +7,7 @@ export default function RecipeName({ navigation: { navigate } }) {
     [recipeName, setName] = useState("Useless text"); 
 
     const onPressSubmit = () => {
-        navigate('Camera', {recipeName: recipeName})
+        navigate('Camera', {name: recipeName})
     }
 
     return (

@@ -5,22 +5,36 @@ import {
     StyleSheet,
     Button,
     Alert,
-    TouchableOpacity, 
-    LogBox } from "react-native";
+    LogBox,
+    SafeAreaView,
+    TextInput } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import PromptForServingsPage from "./Servings-Prompt";
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
-export default function CameraPage({ route, navigate}) {
-    const recipeName = route.params.name
+export default function CameraPage({ route, navigation}) {
+    // Recipe Name passed from the Recipe Name Page
+    // const { recipeName } = route.params
+
+    // Camera States
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
+
+    // Servings Prompt Hooks
+    const [recipeName, ] = useState(route.params.name);
+    const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
-    const [foodName, setFoodName] =  useState("Useless Text");
     const [showServingsPage, setShowServingsPage] = useState(false)
+    const [servings, setServings] = React.useState(0);
+    const [totalCalories, setTotalCalories] = React.useState(0); 
+
+    // useEffect for foodName
+    useEffect(() => {
+        setFoodName(foodName)
+    }, [foodName])
 
     useEffect(() => {
         (async () => {
@@ -29,24 +43,87 @@ export default function CameraPage({ route, navigate}) {
         })();
     }, []);
 
+    const onPressServingsSubmit = () => {
+        setTotalCalories(totalCalories + calories * servings)
+        setTotalCalories( (totalCalories) => {
+            // alert(`calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}`)
+            Alert.alert( "Ingredients:", `Item added successfully. Add another ingredient to the recipe? 
+            calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}
+            and recipe name is ${recipeName}`,
+                [{  
+                    text: "Finish Recipe",
+                    style: "cancel",
+
+                    onPress: () => {
+                        return (
+                            navigation.navigate('Recipes', {
+                                sum : totalCalories,
+                                name : recipeName
+                            })
+                        );
+                    }
+                },  
+                {   
+                    // text: "Yes", onPress: () => navigation.navigate('Camera') 
+                    text: "Yes", onPress: () => setShowServingsPage(false) 
+                }]
+            )
+        });
+
+        setShowServingsPage(false)
+    }
+
+    const ServingsPrompt = () => {
+        return (
+            <SafeAreaView style={styles.ServingsPromptContainer}>
+                <Text>
+                    Enter the number of servings of {foodName} you would like to add.
+                </Text>
+                <Text>
+                    **Note** This item has {calories} calories per serving.{"\n"}
+                </Text>
+                <TextInput 
+                    style={styles.input}
+                    placeholder="Enter the number of servings"
+                    onChangeText={(servings) => setServings(servings)}
+                /> 
+                <Button
+                    title="SUBMIT"
+                    style={styles.button}
+                    onPress={() => onPressServingsSubmit()}
+                />
+            </SafeAreaView>
+        ); 
+    }
+
     const keepIngredientAlert = (foodDescription, caloriesData) => {
-        setCalories(caloriesData)
-        setCalories((calories) => {
-            setFoodName(foodDescription) 
-            setFoodName((foodName) => {
-                Alert.alert( `Scanned ${foodName} with ${calories} calories per serving`, "Use ingredient?",
-                    [{  
-                        text: "Discard",
-                        style: "cancel" 
-                    },  
-                    {   
-                        // text: "Keep", onPress: () => navigation.navigate('Servings', {food_name: foodDescription, calorie_count: caloriesData}) 
-                        text: "Keep", onPress: () => setShowServingsPage(true)
-                    }]
-                );
-            })
-        })
-        }
+        Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
+            [{  
+                text: "Discard",
+                style: "cancel" 
+            },  
+            {   
+                text: "Keep", onPress: () => setShowServingsPage(true)
+            }]
+        );
+        // // setCalories(caloriesData)
+        // setCalories((calories) => {
+        //     // setFoodName(foodDescription) 
+        //     setFoodName((foodName) => {
+        //         Alert.alert( `Scanned ${foodName} with ${calories} calories per serving`, "Use ingredient?",
+        //             [{  
+        //                 text: "Discard",
+        //                 style: "cancel" 
+        //             },  
+        //             {   
+        //                 text: "Keep", onPress: () => setShowServingsPage(true)
+        //             }]
+        //         );
+        //     })
+        // })
+    }
+
+
 
     const getNutrition = async (upc) => {
         try {
@@ -81,10 +158,9 @@ export default function CameraPage({ route, navigate}) {
             );
             let caloriesJson = await caloriesResponse.json();
             const caloriesData = caloriesJson.labelNutrients.calories.value
-
-            // CHANGE THIS ALERT TO A POP-UP TRIGGER
-            // alert(`${foodDescription} is ${caloriesData} calories per serving`);
             
+            setCalories(caloriesData)
+            setFoodName(foodDescription) 
             keepIngredientAlert(foodDescription, caloriesData);
 
             // setFdaData(`${caloriesData}`)
@@ -124,7 +200,7 @@ export default function CameraPage({ route, navigate}) {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.ScannerContainer}>
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
@@ -132,17 +208,33 @@ export default function CameraPage({ route, navigate}) {
             {   
                 scanned &&  <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
             }
+
             { 
-                showServingsPage && <PromptForServingsPage foodName={foodName} calories={calories} /> 
+                showServingsPage && <ServingsPrompt /> 
             }
         </View>
     );
 }
-
+// { 
+//     showServingsPage && <PromptForServingsPage foodName={foodName} calories={calories} /> 
+// }
 const styles = StyleSheet.create({
-    container: {
+    ScannerContainer: {
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
+    },
+    ServingsPromptContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    input : {
+        height: 40,
+        width: 250,
+        margin: 5,
+        borderWidth: 1,
+        padding: 10
     },
 });

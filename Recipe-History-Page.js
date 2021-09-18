@@ -37,27 +37,8 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
 
     const onPressAddRecipe = () => {
         // navigate('Camera')
-        navigate('RecipeName')
+        navigation.navigate('RecipeName')
     }
-
-    if (route.params != undefined) {
-        console.log(route)
-        // let { calorie_sum } = route.params
-        // let { recipe_name } = route.params
-
-        // // setRunningCalorieSum(calorie_sum)
-        // // setRecipeName(recipe_name)
-        // // alert("don't go on linked in!")
-        // alert(`Recipe ${recipe_name} has ${calorie_sum} calories`)
-        // setRecipeList(
-        //     recipeMap => [...recipeMap,
-        //         {
-        //             "recipeName": recipe_name,
-        //             "numCalories": calorie_sum
-        //         } 
-        //     ]
-        // )
-    } 
 
     const Item = ({ title, description }) => (
         <View>
