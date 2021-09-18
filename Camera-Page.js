@@ -36,6 +36,10 @@ export default function CameraPage({ route, navigation}) {
         setFoodName(foodName)
     }, [foodName])
 
+    // useEffect(() => {
+    //     setTotalCalories(prevTotal => (prevTotal + calories * servings))
+    // }, [calories])
+
     useEffect(() => {
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
@@ -43,34 +47,36 @@ export default function CameraPage({ route, navigation}) {
         })();
     }, []);
 
+    // Add another ingredient to the recipe? 
+    // calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}
+    // and recipe name is ${recipeName}`
+
     const onPressServingsSubmit = () => {
-        setTotalCalories(totalCalories + calories * servings)
-        setTotalCalories( (totalCalories) => {
-            // alert(`calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}`)
-            Alert.alert( "Ingredients:", `Item added successfully. Add another ingredient to the recipe? 
-            calorie sum is ${totalCalories} number of servings is ${servings} and calorie count is ${calories}
-            and recipe name is ${recipeName}`,
-                [{  
-                    text: "Finish Recipe",
-                    style: "cancel",
+        // alert(`HERERER calorie sum is ${totalCalories}`) 
+        setTotalCalories(prevTotal => (prevTotal + calories * servings))
+        Alert.alert(  "Ingredients:", `Item added successfully.`,
+            [{  
+                text: "Finish Recipe",
+                style: "cancel",
 
-                    onPress: () => {
-                        return (
-                            navigation.navigate('Recipes', {
-                                sum : totalCalories,
-                                name : recipeName
-                            })
-                        );
-                    }
-                },  
-                {   
-                    // text: "Yes", onPress: () => navigation.navigate('Camera') 
-                    text: "Yes", onPress: () => setShowServingsPage(false) 
-                }]
-            )
-        });
+                onPress: () => {
+                    setTotalCalories((totalCalories) => {
+                        navigation.navigate('Recipes', {
+                            sum : totalCalories,
+                            name : recipeName
+                        })
+                    })
+                }
+            },  
+            {   
+                text: "Add Item", onPress: () => { 
+                    return (
+                        setShowServingsPage(false) 
+                    )
+                }
+            }]
+        )
 
-        setShowServingsPage(false)
     }
 
     const ServingsPrompt = () => {
@@ -90,7 +96,7 @@ export default function CameraPage({ route, navigation}) {
                 <Button
                     title="SUBMIT"
                     style={styles.button}
-                    onPress={() => onPressServingsSubmit()}
+                    onPress={onPressServingsSubmit}
                 />
             </SafeAreaView>
         ); 
@@ -106,21 +112,6 @@ export default function CameraPage({ route, navigation}) {
                 text: "Keep", onPress: () => setShowServingsPage(true)
             }]
         );
-        // // setCalories(caloriesData)
-        // setCalories((calories) => {
-        //     // setFoodName(foodDescription) 
-        //     setFoodName((foodName) => {
-        //         Alert.alert( `Scanned ${foodName} with ${calories} calories per serving`, "Use ingredient?",
-        //             [{  
-        //                 text: "Discard",
-        //                 style: "cancel" 
-        //             },  
-        //             {   
-        //                 text: "Keep", onPress: () => setShowServingsPage(true)
-        //             }]
-        //         );
-        //     })
-        // })
     }
 
 
@@ -215,9 +206,7 @@ export default function CameraPage({ route, navigation}) {
         </View>
     );
 }
-// { 
-//     showServingsPage && <PromptForServingsPage foodName={foodName} calories={calories} /> 
-// }
+
 const styles = StyleSheet.create({
     ScannerContainer: {
         flex: 1,
