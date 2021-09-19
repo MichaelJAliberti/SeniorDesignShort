@@ -1,55 +1,74 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     View, 
-    Text, 
-    SafeAreaView, 
-    TextInput, 
+    SafeAreaView,
     StyleSheet,
+    Text,
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
-import * as firebase from 'firebase';
+import { db, auth } from './firebaseConfig';
 
-const actions = [
-    {
-      text: "Add Recipe",
-      name: "bt_accessibility",
-      position: 1
-    }
-];
+export default function RecipeHistoryPage ({route, navigation: { navigate, goBack }}) {
+    const [recipeMap, setRecipeList] = useState([])
 
-export default function RecipeHistoryPage ({route, navigation, goBack}) {
-    const [runningCalorieSum, setRunningCalorieSum] = React.useState(0);
-    const [recipeName, setRecipeName] = React.useState("Useless Text");
-    const [recipeMap, setRecipeList] = React.useState(
-        [
-            {   "recipeName": "chicken noodle soup",
-                "numCalories": 100
-            },
-            {   "recipeName": "fajitas",
-                "numCalories": 200
+    useEffect(() => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
+            let newMap = [];
+            let recipes = res.data().recipes;
+            for (let name in recipes) {
+                newMap.push(
+                    {
+                        "recipeName": name,
+                        "numCalories": recipes[name]['calories']
+                    }
+                )
             }
-        ]
-    )
-
-    // const { calorie_count } = route.params
-    // const { food_name } = ( route.params == undefined ) ? route.params
+            setRecipeList(newMap);
+        });
+    }, []);
 
     const onPressAddRecipe = () => {
-        // navigate('Camera')
-        navigation.navigate('RecipeName')
+        navigate('RecipeName');
+    }
+
+    const onPressTitle = (title) => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).get().then(res => {
+            let recipe = res.data().recipes[title];
+            let ingredients = recipe.ingredients;
+            let calories = recipe.calories;
+
+            let itemDescription = `${title}\n`;
+            for (let ingredient in ingredients) {
+                itemDescription += `\n${ingredient}: ${ingredients[ingredient]}`;
+            }
+            itemDescription += `\n\ncalories: ${calories}`;
+
+            alert(itemDescription);
+        });
+    }
+
+    const onPressSignOut = () => {
+        // auth.signOut();
+        goBack();
     }
 
     const Item = ({ title, description }) => (
         <View>
-        <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`} >
-        </Button>
+            <Button 
+                style={styles.title} 
+                title={`${title}, ${description} calories`}
+                onPress={() => onPressTitle(title)}>
+            </Button>
+            <Text>
+                {`\n`}
+            </Text>
         </View>
     );
     
     return (
         <SafeAreaView style={styles.container}>
-            <Button title="Back to Login" onPress={() => goBack()} />
+            <Button title="Sign Out" onPress={onPressSignOut} />
             <View style={styles.listContainer}>
             <FlatList
                 data={(route.params == undefined) ? recipeMap :
@@ -66,18 +85,10 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
                 keyExtractor={(item) => item.recipeName}
             />
             </View>
-        <Button title="Sign Out" onPress={() => {
-            firebase.auth().signOut();
-            goBack();
-        }} />
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )
 };
-
-// {(route.params != undefined) &&
-    //     <Text>SBFKARJFHRFHKJASHJ {calorie_sum} {recipe_name}</Text>
-    // }
 
 const styles = StyleSheet.create({
     fab: {
@@ -93,7 +104,6 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
         paddingTop: 22,
-        // flexDirection: "row",
         borderRadius:5
     },
     item: {
