@@ -16,10 +16,10 @@ export default function SignInPage({ navigation: { navigate } }) {
                         async () => {
                             var result = await signInWithGoogleAsync();
                             if (result.cancelled || result.error){
-                                alert('Login failed');
+                                console.log('Failed to sign in with google account.');
                             } else {
                                 navigate('Recipes');
-                                alert('Login succeeded');
+                                console.log('Successfully signed in with google account.');
                             }
                         }
                     }

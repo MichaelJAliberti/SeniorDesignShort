@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { 
     View, 
     Text, 
@@ -19,9 +19,9 @@ const actions = [
 ];
 
 export default function RecipeHistoryPage ({route, navigation, goBack}) {
-    const [runningCalorieSum, setRunningCalorieSum] = React.useState(0);
-    const [recipeName, setRecipeName] = React.useState("Useless Text");
-    const [recipeMap, setRecipeList] = React.useState(
+    const [runningCalorieSum, setRunningCalorieSum] = useState(0);
+    const [recipeName, setRecipeName] = useState("Useless Text");
+    const [recipeMap, setRecipeList] = useState(
         [
             {   "recipeName": "chicken noodle soup",
                 "numCalories": 100
@@ -32,11 +32,7 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
         ]
     )
 
-    // const { calorie_count } = route.params
-    // const { food_name } = ( route.params == undefined ) ? route.params
-
     const onPressAddRecipe = () => {
-        // navigate('Camera')
         navigation.navigate('RecipeName')
     }
 
@@ -75,10 +71,6 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
     )
 };
 
-// {(route.params != undefined) &&
-    //     <Text>SBFKARJFHRFHKJASHJ {calorie_sum} {recipe_name}</Text>
-    // }
-
 const styles = StyleSheet.create({
     fab: {
         position: 'relative', // change to absolute for bottom-right position
@@ -93,7 +85,6 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
         paddingTop: 22,
-        // flexDirection: "row",
         borderRadius:5
     },
     item: {
