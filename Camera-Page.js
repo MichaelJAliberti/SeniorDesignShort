@@ -101,7 +101,8 @@ export default function CameraPage({ route, navigation}) {
         Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
             [{  
                 text: "Discard",
-                style: "cancel" 
+                style: "cancel", 
+                onPress: () => setScanned(false)
             },  
             {   
                 text: "Keep", onPress: () => setShowServingsPage(true)
@@ -132,35 +133,29 @@ export default function CameraPage({ route, navigation}) {
             );
             let fdcNumJson = await fdcNumResponse.json();
             const foodData = fdcNumJson.foods[0]
-            const foodDescription = foodData.description
-            let fdcId = foodData.fdcId
-
-            const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
-            const caloriesResponse = await fetch(
-                caloriesQuerry,
-                {
-                    method: 'GET'
-                }
-            );
-            let caloriesJson = await caloriesResponse.json();
-            const caloriesData = caloriesJson.labelNutrients.calories.value
-            
-            // setCalories(caloriesData)
-            // setFoodName(foodDescription) 
-            keepIngredientAlert(foodDescription, caloriesData);
-
-            // setFdaData(`${caloriesData}`)
-            // db.collection('UserRecipes').doc(auth.currentUser.email).update({
-            //     'Food': {
-            //         'Ingredients': [
-            //             foodDescription
-            //         ],
-            //         'Calories': caloriesData
-            //     }
-            // });
+            try {
+                const foodDescription = foodData.description
+                let fdcId = foodData.fdcId
+                const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
+                const caloriesResponse = await fetch(
+                    caloriesQuerry,
+                    {
+                        method: 'GET'
+                    }
+                );
+                let caloriesJson = await caloriesResponse.json();
+                const caloriesData = caloriesJson.labelNutrients.calories.value
+                
+                keepIngredientAlert(foodDescription, caloriesData);
+                
+            } catch (error) {
+                console.log(error)
+                alert("Invalid barcode scanned. Please try another item.")
+            }
 
         } catch (error) {
             console.error(error);
+            alert("Invalid barcode scanned. Please try another item.")
         } finally {
             setLoading(false);
         }

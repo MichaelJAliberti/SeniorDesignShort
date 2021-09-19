@@ -42,7 +42,7 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
 
     const Item = ({ title, description }) => (
         <View>
-        <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`}>
+        <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`} >
         </Button>
         </View>
     );
