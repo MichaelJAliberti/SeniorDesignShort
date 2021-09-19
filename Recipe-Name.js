@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, Button, ImageBackground, Text } from "react-native";
+import { SafeAreaView, StyleSheet, Button, Text } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export default function RecipeName({ navigation: { navigate } }) {
@@ -7,7 +7,7 @@ export default function RecipeName({ navigation: { navigate } }) {
     [recipeName, setName] = useState("Useless text"); 
 
     const onPressSubmit = () => {
-        navigate('Camera', {recipeName: recipeName})
+        navigate('Camera', {name: recipeName})
     }
 
     return (
@@ -16,7 +16,6 @@ export default function RecipeName({ navigation: { navigate } }) {
             <TextInput
                 style={styles.input}
                 onChangeText={(recipeName) => setName(recipeName)}
-                // value={name}
                 placeholder="Enter recipe name"
             />
             <Button
@@ -27,7 +26,6 @@ export default function RecipeName({ navigation: { navigate } }) {
         </SafeAreaView>
     )
 }
-
 
 const styles = StyleSheet.create ({
     submitButton : {

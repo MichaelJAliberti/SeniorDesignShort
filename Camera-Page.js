@@ -1,23 +1,42 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     View, 
     Text, 
-    SafeAreaView, 
-    TextInput, 
     StyleSheet,
     Button,
-    TouchableOpacity, 
-    LogBox } from "react-native";
-import { BarCodeScanner } from 'expo-barcode-scanner';
+    Alert,
+    LogBox,
+    SafeAreaView } from "react-native";
+import { TextInput } from "react-native-paper";
+import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
-export default function CameraPage({ route, navigate}) {
-    const recipeName = route.params.name
+export default function CameraPage({ route, navigation}) {
+    // Recipe Name passed from the Recipe Name Page
+    const recipeName = route.params.name;
+
+    // Running list of recipe ingredients
+    const [ingredientNames, setIngredients] = useState([]);
+    const [ingredientServings, setServings] = useState([]);
+
+    // Camera States
     const [hasPermission, setHasPermission] = useState(null);
     const [isLoading, setLoading] = useState(true);
     const [scanned, setScanned] = useState(false);
+
+    // Servings Prompt Hooks
+    const [foodName, setFoodName] = useState("Useless Text")
+    const [calories, setCalories] = useState(0);
+    const [showServingsPage, setShowServingsPage] = useState(false)
+    const [totalCalories, setTotal] = useState(0);
+    let servings = 0;
+
+    // useEffect for foodName
+    useEffect(() => {
+        setFoodName(foodName)
+    }, [foodName]);
 
     useEffect(() => {
         (async () => {
@@ -25,6 +44,90 @@ export default function CameraPage({ route, navigate}) {
             setHasPermission(status === 'granted');
         })();
     }, []);
+
+    const onPressServingsSubmit = () => {
+        let nextTotalCalories = totalCalories + calories * servings;
+        setTotal(nextTotalCalories);
+        Alert.alert( "Ingredients:", `Item added successfully.`,
+            [{  
+                text: "Finish Recipe",
+                style: "cancel",
+                onPress: () => {
+                    // track ingredient information
+                    let tempIngredients = ingredientNames;
+                    let tempServings = ingredientServings;
+                    tempIngredients.push(`${foodName}`);
+                    tempServings.push(`${servings} servings`);
+                    setIngredients(tempIngredients);
+                    setServings(tempServings);
+
+                    // post recipe information to firestore database
+                    const recipeRef = db.collection('UserRecipes').doc(auth.currentUser.email)
+                    for (let i = 0; i < ingredientNames.length; i++) {
+                        recipeRef.update({
+                            [`recipes.${recipeName}.ingredients.${ingredientNames[i]}`]: ingredientServings[i],
+                        });
+                    };
+                    recipeRef.update({
+                        [`recipes.${recipeName}.calories`]: nextTotalCalories,
+                    });
+
+                    navigation.navigate('Recipes')
+                }
+            },  
+            {
+                text: "Add Item", onPress: () => {
+                    // track ingredient information
+                    let tempIngredients = ingredientNames;
+                    let tempServings = ingredientServings;
+                    tempIngredients.push(`${foodName}`);
+                    tempServings.push(`${servings} servings`);
+                    setIngredients(tempIngredients);
+                    setServings(tempServings);
+
+                    return (
+                        setShowServingsPage(false) 
+                    );
+                }
+            }]
+        )
+    }
+
+    const ServingsPrompt = () => {
+        return (
+            <SafeAreaView style={styles.ServingsPromptContainer}>
+                <Text>
+                    Enter the number of servings of {foodName} you would like to add.
+                </Text>
+                <Text>
+                    **Note** This item has {calories} calories per serving.{"\n"}
+                </Text>
+                <TextInput 
+                    style={styles.input}
+                    onChangeText={(val) => servings = val}
+                    placeholder="Enter the number of servings"
+                /> 
+                <Button
+                    title="SUBMIT"
+                    style={styles.button}
+                    onPress={onPressServingsSubmit}
+                />
+            </SafeAreaView>
+        ); 
+    }
+
+    const keepIngredientAlert = (foodDescription, caloriesData) => {
+        Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
+            [{  
+                text: "Discard",
+                style: "cancel", 
+                onPress: () => setScanned(false)
+            },  
+            {   
+                text: "Keep", onPress: () => setShowServingsPage(true)
+            }]
+        );
+    }
 
     const getNutrition = async (upc) => {
         try {
@@ -49,7 +152,6 @@ export default function CameraPage({ route, navigate}) {
             const foodData = fdcNumJson.foods[0]
             const foodDescription = foodData.description
             let fdcId = foodData.fdcId
-
             const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
             const caloriesResponse = await fetch(
                 caloriesQuerry,
@@ -60,27 +162,28 @@ export default function CameraPage({ route, navigate}) {
             let caloriesJson = await caloriesResponse.json();
             const caloriesData = caloriesJson.labelNutrients.calories.value
 
-            // CHANGE THIS ALERT TO A POP-UP TRIGGER
-            alert(`${foodDescription} is ${caloriesData} calories per serving`);
-            db.collection('UserRecipes').doc(auth.currentUser.email).update({
-                'Food': {
-                    'Ingredients': [
-                        foodDescription
-                    ],
-                    'Calories': caloriesData
-                }
-            });
-
+            setCalories(caloriesData)
+            setFoodName(foodDescription) 
+            
+            keepIngredientAlert(foodDescription, caloriesData);
         } catch (error) {
             console.error(error);
+            alert("Invalid barcode scanned. Please try another item.")
         } finally {
             setLoading(false);
         }
     }
 
+    const formatUpc = (upc) => {
+        if (upc.length > 12) {
+            return upc.substring(1)
+        } else if (upc.length == 12)
+            return upc
+    }
+
     const handleBarCodeScanned = async ({ type, data }) => {
         setScanned(true);
-        await getNutrition(data)
+        await getNutrition(formatUpc(data))
     };
 
     if (hasPermission === null) {
@@ -91,20 +194,38 @@ export default function CameraPage({ route, navigate}) {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.ScannerContainer}>
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
             />
-            {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
+            {   
+                scanned &&  <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
+            }
+            { 
+                showServingsPage && <ServingsPrompt /> 
+            }
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    ScannerContainer: {
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
+    },
+    ServingsPromptContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    input : {
+        height: 40,
+        width: 250,
+        margin: 5,
+        borderWidth: 1,
+        padding: 10
     },
 });

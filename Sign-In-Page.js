@@ -12,24 +12,14 @@ export default function SignInPage({ navigation: { navigate } }) {
                 <Button
                     title='SIGN-IN WITH GOOGLE'
                     style={styles.button}
-                    onPress={
-                        async () => {
-                            var result = await signInWithGoogleAsync();
-                            if (result.cancelled || result.error){
-                                alert('Login failed');
-                            } else {
-                                navigate('Recipes');
-                                alert('Login succeeded');
-                            }
-                        }
-                    }
+                    onPress={() => signInWithGoogleAsync(navigate)}
                 />
             </ImageBackground>
         </SafeAreaView>
     )
 }
 
-async function signInWithGoogleAsync() {
+async function signInWithGoogleAsync(navigate) {
     try {
         const result = await Google.logInAsync({
             androidClientId: '107579648655-8qk5bk9o15662og8h0rc9k61a66hdebj.apps.googleusercontent.com',
@@ -38,19 +28,17 @@ async function signInWithGoogleAsync() {
         });
   
         if (result.type === 'success') {
-            onSignIn(result)
-            return result.accessToken;
+            onSignIn(result, navigate);
         } else {
-            return { cancelled: true };
+            console.log('Failed to sign in with google account.');
         }
     } catch (e) {
-        return { error: true };
+        console.log('Failed to sign in with google account.');
     }
 }
 
-function onSignIn(googleUser) {
+async function onSignIn(googleUser, navigate) {
     var unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-        unsubscribe();
         if (!isUserEqual(googleUser, firebaseUser)) {
             // Build Firebase credential with the Google user info.
             var credential = firebase.auth.GoogleAuthProvider.credential(
@@ -67,7 +55,8 @@ function onSignIn(googleUser) {
 
                             recipesRef.doc(auth.currentUser.email).set(
                                 {
-                                    ownerId: auth.currentUser.uid
+                                    ownerId: auth.currentUser.uid,
+                                    recipes: {}
                                 }
                             );
                             console.log('Successfully signed in new user to Firebase.');
@@ -76,12 +65,21 @@ function onSignIn(googleUser) {
                         }
                     }
                 );
+                if (firebaseUser) {
+                    unsubscribe();
+                    navigate('Recipes');
+                    console.log('Successfully signed in with google account.');
+                }
             }
             catch (error) {
                 console.log('Error signing user in to Firebase.');
             }
         } else {
-            console.log('User already signed-in Firebase.');
+            if (firebaseUser) {
+                unsubscribe();
+                navigate('Recipes');
+                console.log('User already signed-in Firebase.');
+            }
         }
     });
   }
