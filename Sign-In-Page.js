@@ -48,7 +48,7 @@ async function signInWithGoogleAsync() {
     }
 }
 
-function onSignIn(googleUser) {
+async function onSignIn(googleUser) {
     var unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
         unsubscribe();
         if (!isUserEqual(googleUser, firebaseUser)) {
