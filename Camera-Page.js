@@ -108,8 +108,6 @@ export default function CameraPage({ route, navigation}) {
     }
 
     const keepIngredientAlert = (foodDescription, caloriesData) => {
-        setCalories(caloriesData)
-        setFoodName(foodDescription) 
         Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
             [{  
                 text: "Discard",
@@ -143,26 +141,21 @@ export default function CameraPage({ route, navigation}) {
             );
             let fdcNumJson = await fdcNumResponse.json();
             const foodData = fdcNumJson.foods[0]
-            try {
-                const foodDescription = foodData.description
-                let fdcId = foodData.fdcId
-                const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
-                const caloriesResponse = await fetch(
-                    caloriesQuerry,
-                    {
-                        method: 'GET'
-                    }
-                );
-                let caloriesJson = await caloriesResponse.json();
-                const caloriesData = caloriesJson.labelNutrients.calories.value
-                
-                keepIngredientAlert(foodDescription, caloriesData);
-                
-            } catch (error) {
-                console.log(error)
-                alert("Invalid barcode scanned. Please try another item.")
-            }
+            const foodDescription = foodData.description
+            let fdcId = foodData.fdcId
+            const caloriesQuerry = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${fdaKey}`
+            const caloriesResponse = await fetch(
+                caloriesQuerry,
+                {
+                    method: 'GET'
+                }
+            );
+            let caloriesJson = await caloriesResponse.json();
+            const caloriesData = caloriesJson.labelNutrients.calories.value
 
+            setCalories(caloriesData)
+            setFoodName(foodDescription) 
+            
             keepIngredientAlert(foodDescription, caloriesData);
         } catch (error) {
             console.error(error);
