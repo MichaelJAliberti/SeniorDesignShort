@@ -1,8 +1,11 @@
 # SeniorDesignShort
 The repo for Michael Aliberti's and Julia Zeng's Senior Design introductory project
 
-## UI/Frontend Design Decisions
+## Walkthrough
+Due to size constraints, our app walkthrough video can be found [here](https://drive.google.com/file/d/1HPByDYRgPjDz0_wSLrZRezSbE1_RxJ_B/view).  
+Screenshots of the app as run on an iPad 2 can be found in the Screenshots directory.
 
+## UI/Frontend Design Decisions
 * A simple UI was implement to provide a straightforward, uni-directional navigation experience for the user. This was implemented with the design of a select number of pages: the Recipe History Page, the Camera Page, and Servings Prompt component. 
 * The Camera Page includes the barcode scanner and conditionally visible Servings Prompt component. We decided to keep these two components on the same page to employ persistent state hooks to keep track of key values. 
 * To create a recipe, the user presses the floating button on the Recipe History Page
