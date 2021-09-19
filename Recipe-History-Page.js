@@ -3,24 +3,17 @@ import {
     View, 
     SafeAreaView,
     StyleSheet,
+    Text,
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
 import { db, auth } from './firebaseConfig';
 
-const actions = [
-    {
-      text: "Add Recipe",
-      name: "bt_accessibility",
-      position: 1
-    }
-];
-
 export default function RecipeHistoryPage ({route, navigation: { navigate, goBack }}) {
     const [recipeMap, setRecipeList] = useState([])
 
     useEffect(() => {
-        db.collection('UserRecipes').doc(auth.currentUser.email).get().then(res => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
             let newMap = [];
             let recipes = res.data().recipes;
             for (let name in recipes) {
@@ -39,15 +32,37 @@ export default function RecipeHistoryPage ({route, navigation: { navigate, goBac
         navigate('RecipeName');
     }
 
+    const onPressTitle = (title) => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).get().then(res => {
+            let recipe = res.data().recipes[title];
+            let ingredients = recipe.ingredients;
+            let calories = recipe.calories;
+
+            let itemDescription = `${title}\n`;
+            for (let ingredient in ingredients) {
+                itemDescription += `\n${ingredient}: ${ingredients[ingredient]}`;
+            }
+            itemDescription += `\n\ncalories: ${calories}`;
+
+            alert(itemDescription);
+        });
+    }
+
     const onPressSignOut = () => {
-        auth.signOut();
+        // auth.signOut();
         goBack();
     }
 
     const Item = ({ title, description }) => (
         <View>
-            <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`}>
+            <Button 
+                style={styles.title} 
+                title={`${title}, ${description} calories`}
+                onPress={() => onPressTitle(title)}>
             </Button>
+            <Text>
+                {`\n`}
+            </Text>
         </View>
     );
     
