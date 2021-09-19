@@ -13,7 +13,8 @@ export default function RecipeHistoryPage ({route, navigation: { navigate, goBac
     const [recipeMap, setRecipeList] = useState([])
 
     useEffect(() => {
-        db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
+        unsubscribe = db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
+            unsubscribe();
             let newMap = [];
             let recipes = res.data().recipes;
             for (let name in recipes) {
@@ -49,7 +50,7 @@ export default function RecipeHistoryPage ({route, navigation: { navigate, goBac
     }
 
     const onPressSignOut = () => {
-        // auth.signOut();
+        auth.signOut();
         goBack();
     }
 
