@@ -6,7 +6,6 @@ import {
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
-import * as firebase from 'firebase';
 import { db, auth } from './firebaseConfig';
 
 const actions = [
@@ -19,10 +18,9 @@ const actions = [
 
 export default function RecipeHistoryPage ({route, navigation: { navigate, goBack }}) {
     const [recipeMap, setRecipeList] = useState([])
-    let unsubscribe = [];
 
     useEffect(() => {
-        unsubscribe = db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
+        db.collection('UserRecipes').doc(auth.currentUser.email).get().then(res => {
             let newMap = [];
             let recipes = res.data().recipes;
             for (let name in recipes) {
@@ -41,9 +39,8 @@ export default function RecipeHistoryPage ({route, navigation: { navigate, goBac
         navigate('RecipeName');
     }
 
-    const onPressSignOut = async () => {
-        await firebase.auth().signOut();
-        await  unsubsribe();
+    const onPressSignOut = () => {
+        auth.signOut();
         goBack();
     }
 
