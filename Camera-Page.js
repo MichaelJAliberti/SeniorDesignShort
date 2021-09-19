@@ -96,6 +96,8 @@ export default function CameraPage({ route, navigation}) {
     }
 
     const keepIngredientAlert = (foodDescription, caloriesData) => {
+        setCalories(caloriesData)
+        setFoodName(foodDescription) 
         Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
             [{  
                 text: "Discard",
@@ -143,8 +145,8 @@ export default function CameraPage({ route, navigation}) {
             let caloriesJson = await caloriesResponse.json();
             const caloriesData = caloriesJson.labelNutrients.calories.value
             
-            setCalories(caloriesData)
-            setFoodName(foodDescription) 
+            // setCalories(caloriesData)
+            // setFoodName(foodDescription) 
             keepIngredientAlert(foodDescription, caloriesData);
 
             // setFdaData(`${caloriesData}`)
