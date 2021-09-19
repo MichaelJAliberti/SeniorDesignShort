@@ -1,14 +1,13 @@
-import React, { Component, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     View, 
-    Text, 
-    SafeAreaView, 
-    TextInput, 
+    SafeAreaView,
     StyleSheet,
     Button,
     FlatList } from "react-native";
 import { FAB } from 'react-native-paper';
 import * as firebase from 'firebase';
+import { db, auth } from './firebaseConfig';
 
 const actions = [
     {
@@ -18,34 +17,46 @@ const actions = [
     }
 ];
 
-export default function RecipeHistoryPage ({route, navigation, goBack}) {
-    const [runningCalorieSum, setRunningCalorieSum] = useState(0);
-    const [recipeName, setRecipeName] = useState("Useless Text");
-    const [recipeMap, setRecipeList] = useState(
-        [
-            {   "recipeName": "chicken noodle soup",
-                "numCalories": 100
-            },
-            {   "recipeName": "fajitas",
-                "numCalories": 200
+export default function RecipeHistoryPage ({route, navigation: { navigate, goBack }}) {
+    const [recipeMap, setRecipeList] = useState([])
+    let unsubscribe = [];
+
+    useEffect(() => {
+        unsubscribe = db.collection('UserRecipes').doc(auth.currentUser.email).onSnapshot(res => {
+            let newMap = [];
+            let recipes = res.data().recipes;
+            for (let name in recipes) {
+                newMap.push(
+                    {
+                        "recipeName": name,
+                        "numCalories": recipes[name]['calories']
+                    }
+                )
             }
-        ]
-    )
+            setRecipeList(newMap);
+        });
+    }, []);
 
     const onPressAddRecipe = () => {
-        navigation.navigate('RecipeName')
+        navigate('RecipeName');
+    }
+
+    const onPressSignOut = async () => {
+        await firebase.auth().signOut();
+        await  unsubsribe();
+        goBack();
     }
 
     const Item = ({ title, description }) => (
         <View>
-        <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`}>
-        </Button>
+            <Button style={styles.title} title={`Recipe Name: ${title}, Number of Calories: ${description}`}>
+            </Button>
         </View>
     );
     
     return (
         <SafeAreaView style={styles.container}>
-            <Button title="Back to Login" onPress={() => goBack()} />
+            <Button title="Sign Out" onPress={onPressSignOut} />
             <View style={styles.listContainer}>
             <FlatList
                 data={(route.params == undefined) ? recipeMap :
@@ -62,10 +73,6 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
                 keyExtractor={(item) => item.recipeName}
             />
             </View>
-        <Button title="Sign Out" onPress={() => {
-            firebase.auth().signOut();
-            goBack();
-        }} />
             <FAB style={styles.fab} icon="plus" onPress={onPressAddRecipe} />
         </SafeAreaView>
     )

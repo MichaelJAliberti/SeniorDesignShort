@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     View, 
     Text, 
@@ -9,14 +9,17 @@ import {
     SafeAreaView,
     TextInput } from "react-native";
 import { BarCodeScanner } from 'expo-barcode-scanner'
-import PromptForServingsPage from "./Servings-Prompt";
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
 LogBox.ignoreLogs(['Setting a timer'])
 
 export default function CameraPage({ route, navigation}) {
     // Recipe Name passed from the Recipe Name Page
-    const [recipeName, ] = useState(route.params.name);
+    const recipeName = route.params.name;
+
+    // Running list of recipe ingredients
+    const ingredientNames = [];
+    const ingredientServings = [];
 
     // Camera States
     const [hasPermission, setHasPermission] = useState(null);
@@ -27,13 +30,13 @@ export default function CameraPage({ route, navigation}) {
     const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
     const [showServingsPage, setShowServingsPage] = useState(false)
-    const [servings, setServings] = React.useState(0);
-    const [totalCalories, setTotalCalories] = React.useState(0); 
+    const [servings, setServings] = useState(0);
+    let totalCalories = 0;
 
     // useEffect for foodName
     useEffect(() => {
         setFoodName(foodName)
-    }, [foodName])
+    }, [foodName]);
 
     useEffect(() => {
         (async () => {
@@ -43,30 +46,42 @@ export default function CameraPage({ route, navigation}) {
     }, []);
 
     const onPressServingsSubmit = () => {
-        setTotalCalories(prevTotal => (prevTotal + calories * servings))
-        Alert.alert(  "Ingredients:", `Item added successfully.`,
+        totalCalories = totalCalories + calories * servings;
+        Alert.alert( "Ingredients:", `Item added successfully.`,
             [{  
                 text: "Finish Recipe",
                 style: "cancel",
-
                 onPress: () => {
-                    setTotalCalories((totalCalories) => {
-                        navigation.navigate('Recipes', {
-                            sum : totalCalories,
-                            name : recipeName
-                        })
-                    })
+                    // track ingredient information
+                    ingredientNames.push(`${foodName}`);
+                    ingredientServings.push(`${servings} servings`);
+
+                    // post recipe information to firestore database
+                    const recipeRef = db.collection('UserRecipes').doc(auth.currentUser.email)
+                    for (let i = 0; i < ingredientNames.length; i++) {
+                        recipeRef.update({
+                            [`recipes.${recipeName}.ingredients.${ingredientNames[i]}`]: ingredientServings[i],
+                        });
+                    };
+                    recipeRef.update({
+                        [`recipes.${recipeName}.calories`]: totalCalories,
+                    });
+
+                    navigation.navigate('Recipes')
                 }
             },  
-            {   
-                text: "Add Item", onPress: () => { 
+            {
+                text: "Add Item", onPress: () => {
+                    // track ingredient information
+                    ingredientNames.push(foodName);
+                    ingredientServings.push(`${servings} servings`);
+
                     return (
                         setShowServingsPage(false) 
-                    )
+                    );
                 }
             }]
         )
-
     }
 
     const ServingsPrompt = () => {
@@ -104,8 +119,6 @@ export default function CameraPage({ route, navigation}) {
         );
     }
 
-
-
     const getNutrition = async (upc) => {
         try {
             const fdaKeyQuerry = `${projecFirebaseUrl}/databases/(default)/documents/FdaRetrieval/Fda`;
@@ -138,22 +151,12 @@ export default function CameraPage({ route, navigation}) {
                 }
             );
             let caloriesJson = await caloriesResponse.json();
-            const caloriesData = caloriesJson.labelNutrients.calories.value
+            const caloriesData = caloriesJson.labelNutrients.calories.value;
             
-            setCalories(caloriesData)
-            setFoodName(foodDescription) 
+            setCalories(caloriesData);
+            setFoodName(foodDescription);
+
             keepIngredientAlert(foodDescription, caloriesData);
-
-            // setFdaData(`${caloriesData}`)
-            // db.collection('UserRecipes').doc(auth.currentUser.email).update({
-            //     'Food': {
-            //         'Ingredients': [
-            //             foodDescription
-            //         ],
-            //         'Calories': caloriesData
-            //     }
-            // });
-
         } catch (error) {
             console.error(error);
         } finally {
@@ -189,7 +192,6 @@ export default function CameraPage({ route, navigation}) {
             {   
                 scanned &&  <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
             }
-
             { 
                 showServingsPage && <ServingsPrompt /> 
             }
