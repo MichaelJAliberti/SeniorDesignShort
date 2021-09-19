@@ -18,8 +18,8 @@ export default function CameraPage({ route, navigation}) {
     const recipeName = route.params.name;
 
     // Running list of recipe ingredients
-    const ingredientNames = [];
-    const ingredientServings = [];
+    const [ingredientNames, setIngredients] = useState([]);
+    const [ingredientServings, setServings] = useState([]);
 
     // Camera States
     const [hasPermission, setHasPermission] = useState(null);
@@ -30,8 +30,8 @@ export default function CameraPage({ route, navigation}) {
     const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
     const [showServingsPage, setShowServingsPage] = useState(false)
+    const [totalCalories, setTotal] = useState(0);
     let servings = 0;
-    let totalCalories = 0;
 
     // useEffect for foodName
     useEffect(() => {
@@ -46,15 +46,20 @@ export default function CameraPage({ route, navigation}) {
     }, []);
 
     const onPressServingsSubmit = () => {
-        totalCalories = totalCalories + calories * servings;
+        let nextTotalCalories = totalCalories + calories * servings;
+        setTotal(nextTotalCalories);
         Alert.alert( "Ingredients:", `Item added successfully.`,
             [{  
                 text: "Finish Recipe",
                 style: "cancel",
                 onPress: () => {
                     // track ingredient information
-                    ingredientNames.push(`${foodName}`);
-                    ingredientServings.push(`${servings} servings`);
+                    let tempIngredients = ingredientNames;
+                    let tempServings = ingredientServings;
+                    tempIngredients.push(`${foodName}`);
+                    tempServings.push(`${servings} servings`);
+                    setIngredients(tempIngredients);
+                    setServings(tempServings);
 
                     // post recipe information to firestore database
                     const recipeRef = db.collection('UserRecipes').doc(auth.currentUser.email)
@@ -64,7 +69,7 @@ export default function CameraPage({ route, navigation}) {
                         });
                     };
                     recipeRef.update({
-                        [`recipes.${recipeName}.calories`]: totalCalories,
+                        [`recipes.${recipeName}.calories`]: nextTotalCalories,
                     });
 
                     navigation.navigate('Recipes')
@@ -73,8 +78,12 @@ export default function CameraPage({ route, navigation}) {
             {
                 text: "Add Item", onPress: () => {
                     // track ingredient information
-                    ingredientNames.push(foodName);
-                    ingredientServings.push(`${servings} servings`);
+                    let tempIngredients = ingredientNames;
+                    let tempServings = ingredientServings;
+                    tempIngredients.push(`${foodName}`);
+                    tempServings.push(`${servings} servings`);
+                    setIngredients(tempIngredients);
+                    setServings(tempServings);
 
                     return (
                         setShowServingsPage(false) 
