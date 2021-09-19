@@ -51,14 +51,6 @@ export default function CameraPage({ route, navigation}) {
 
                 onPress: () => {
                     setTotalCalories((totalCalories) => {
-                        db.collection('UserRecipes').doc(auth.currentUser.email).update({
-                            'Food': {
-                                'Ingredients': [
-                                    foodDescription
-                                ],
-                                'Calories': caloriesData
-                            }
-                        });
                         navigation.navigate('Recipes', {
                             sum : totalCalories,
                             name : recipeName
