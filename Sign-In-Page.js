@@ -12,24 +12,14 @@ export default function SignInPage({ navigation: { navigate } }) {
                 <Button
                     title='SIGN-IN WITH GOOGLE'
                     style={styles.button}
-                    onPress={
-                        async () => {
-                            var result = await signInWithGoogleAsync();
-                            if (result.cancelled || result.error){
-                                console.log('Failed to sign in with google account.');
-                            } else {
-                                navigate('Recipes');
-                                console.log('Successfully signed in with google account.');
-                            }
-                        }
-                    }
+                    onPress={() => signInWithGoogleAsync(navigate)}
                 />
             </ImageBackground>
         </SafeAreaView>
     )
 }
 
-async function signInWithGoogleAsync() {
+async function signInWithGoogleAsync(navigate) {
     try {
         const result = await Google.logInAsync({
             androidClientId: '107579648655-8qk5bk9o15662og8h0rc9k61a66hdebj.apps.googleusercontent.com',
@@ -38,19 +28,17 @@ async function signInWithGoogleAsync() {
         });
   
         if (result.type === 'success') {
-            await onSignIn(result)
-            return result.accessToken;
+            onSignIn(result, navigate);
         } else {
-            return { cancelled: true };
+            console.log('Failed to sign in with google account.');
         }
     } catch (e) {
-        return { error: true };
+        console.log('Failed to sign in with google account.');
     }
 }
 
-async function onSignIn(googleUser) {
+async function onSignIn(googleUser, navigate) {
     var unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-        unsubscribe();
         if (!isUserEqual(googleUser, firebaseUser)) {
             // Build Firebase credential with the Google user info.
             var credential = firebase.auth.GoogleAuthProvider.credential(
@@ -77,12 +65,21 @@ async function onSignIn(googleUser) {
                         }
                     }
                 );
+                if (firebaseUser) {
+                    unsubscribe();
+                    navigate('Recipes');
+                    console.log('Successfully signed in with google account.');
+                }
             }
             catch (error) {
                 console.log('Error signing user in to Firebase.');
             }
         } else {
-            console.log('User already signed-in Firebase.');
+            if (firebaseUser) {
+                unsubscribe();
+                navigate('Recipes');
+                console.log('User already signed-in Firebase.');
+            }
         }
     });
   }

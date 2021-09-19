@@ -6,8 +6,8 @@ import {
     Button,
     Alert,
     LogBox,
-    SafeAreaView,
-    TextInput } from "react-native";
+    SafeAreaView } from "react-native";
+import { TextInput } from "react-native-paper";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
 
@@ -30,7 +30,7 @@ export default function CameraPage({ route, navigation}) {
     const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
     const [showServingsPage, setShowServingsPage] = useState(false)
-    const [servings, setServings] = useState(0);
+    let servings = 0;
     let totalCalories = 0;
 
     // useEffect for foodName
@@ -95,8 +95,8 @@ export default function CameraPage({ route, navigation}) {
                 </Text>
                 <TextInput 
                     style={styles.input}
+                    onChangeText={(val) => servings = val}
                     placeholder="Enter the number of servings"
-                    onChangeText={(servings) => setServings(servings)}
                 /> 
                 <Button
                     title="SUBMIT"
@@ -108,6 +108,8 @@ export default function CameraPage({ route, navigation}) {
     }
 
     const keepIngredientAlert = (foodDescription, caloriesData) => {
+        setCalories(caloriesData)
+        setFoodName(foodDescription) 
         Alert.alert( `Scanned ${foodDescription} with ${caloriesData} calories per serving`, "Use ingredient?",
             [{  
                 text: "Discard",
