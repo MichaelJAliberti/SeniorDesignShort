@@ -6,8 +6,8 @@ import {
     Button,
     Alert,
     LogBox,
-    SafeAreaView,
-    TextInput } from "react-native";
+    SafeAreaView } from "react-native";
+import { TextInput } from "react-native-paper";
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import PromptForServingsPage from "./Servings-Prompt";
 import { db, auth, projecFirebaseUrl } from './firebaseConfig';
@@ -27,7 +27,8 @@ export default function CameraPage({ route, navigation}) {
     const [foodName, setFoodName] = useState("Useless Text")
     const [calories, setCalories] = useState(0);
     const [showServingsPage, setShowServingsPage] = useState(false)
-    const [servings, setServings] = React.useState(0);
+    // const [servings, setServings] = React.useState(0);
+    var servings; 
     const [totalCalories, setTotalCalories] = React.useState(0); 
 
     // useEffect for foodName
@@ -80,8 +81,10 @@ export default function CameraPage({ route, navigation}) {
                 </Text>
                 <TextInput 
                     style={styles.input}
+                    // onChangeText={(servings) => setServings(servings)}
+                    onChangeText={(val) => servings = val}
                     placeholder="Enter the number of servings"
-                    onChangeText={(servings) => setServings(servings)}
+                    // value={servings.toString()}
                 /> 
                 <Button
                     title="SUBMIT"
