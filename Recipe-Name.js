@@ -1,13 +1,28 @@
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, Button, ImageBackground, Text } from "react-native";
 import { TextInput } from "react-native-paper";
+import * as firebase from 'firebase';
+import { db, auth } from './firebaseConfig';
 
-export default function RecipeName({ navigation: { navigate } }) {
 
-    [recipeName, setName] = useState("Useless text"); 
+export default function RecipeName({ route, navigation }) {
+
+    const [RecipeCollectionRef, ] = useState(route.params.RecipeCollectionRef)
+    const [recipeName, setName] = useState("Useless text"); 
 
     const onPressSubmit = () => {
-        navigate('Camera', {name: recipeName})
+        console.log(route.params)
+        RecipeCollectionRef.add({ 
+                recipeName: recipeName,
+                totalCalories: 0
+        })
+        .then(function(docRef) {
+            console.log("Document written with ID: ", docRef.id);
+            navigation.navigate('Camera', {name: recipeName, docID: docRef.id})
+        })
+        .catch(function(error) {
+            console.error("Error adding document: ", error);
+        });
     }
 
     return (

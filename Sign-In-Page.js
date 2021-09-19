@@ -14,11 +14,13 @@ export default function SignInPage({ navigation: { navigate } }) {
                     style={styles.button}
                     onPress={
                         async () => {
-                            var result = await signInWithGoogleAsync();
+                            var [result, RecipeCollectionRef] = await signInWithGoogleAsync();
                             if (result.cancelled || result.error){
                                 alert('Login failed');
                             } else {
-                                navigate('Recipes');
+                                console.log("sign-in page: ")
+                                console.log(RecipeCollectionRef)
+                                navigate('Recipes', {RecipeCollectionRef: RecipeCollectionRef});
                                 alert('Login succeeded');
                             }
                         }
@@ -38,8 +40,8 @@ async function signInWithGoogleAsync() {
         });
   
         if (result.type === 'success') {
-            onSignIn(result)
-            return result.accessToken;
+            const RecipeCollectionRef = onSignIn(result)
+            return [result.accessToken, RecipeCollectionRef];
         } else {
             return { cancelled: true };
         }
@@ -72,6 +74,7 @@ function onSignIn(googleUser) {
                             );
                             console.log('Successfully signed in new user to Firebase.');
                         } else {
+                            const recipesRef = db.collection('UserRecipes')
                             console.log('Successfully signed in existing user to Firebase.');
                         }
                     }
@@ -83,6 +86,19 @@ function onSignIn(googleUser) {
         } else {
             console.log('User already signed-in Firebase.');
         }
+        // const RecipeCollectionRef = db.collection('UserRecipes').doc(auth.currentUser.email).collection('Recipes')
+        // const recipesRef = db.collection('UserRecipes')
+        console.log('sign-in page: ')
+        db.collection('UserRecipes')
+        .onSnapshot((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                console.log(doc.data()); // For data inside doc
+                console.log(doc.id); // For doc name
+            })
+        })
+        // console.log(RecipeCollectionRef)
+        // console.log(db.collection('UserRecipes').doc(auth.currentUser.email).get())
+        return RecipeCollectionRef;
     });
   }
   

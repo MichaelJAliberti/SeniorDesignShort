@@ -17,6 +17,7 @@ LogBox.ignoreLogs(['Setting a timer'])
 export default function CameraPage({ route, navigation}) {
     // Recipe Name passed from the Recipe Name Page
     const [recipeName, ] = useState(route.params.name);
+    const [firestoreRecipeDocId, ] = useState(route.params.docID)
 
     // Camera States
     const [hasPermission, setHasPermission] = useState(null);
@@ -51,6 +52,16 @@ export default function CameraPage({ route, navigation}) {
 
                 onPress: () => {
                     setTotalCalories((totalCalories) => {
+
+                        RecipeCollectionRef
+                            .doc(firestoreRecipeDocId)
+                            .update({
+                                totalCalories: totalCalories,
+                            })
+                            .then(() => {
+                                console.log('User updated!');
+                            });
+
                         navigation.navigate('Recipes', {
                             sum : totalCalories,
                             name : recipeName

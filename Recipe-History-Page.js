@@ -36,8 +36,9 @@ export default function RecipeHistoryPage ({route, navigation, goBack}) {
     // const { food_name } = ( route.params == undefined ) ? route.params
 
     const onPressAddRecipe = () => {
-        // navigate('Camera')
-        navigation.navigate('RecipeName')
+        console.log("Recipe History Page: ")
+        console.log(RecipeCollectionRef)
+        navigation.navigate('RecipeName', {RecipeCollectionRef: route.params.RecipeCollectionRef} )
     }
 
     const Item = ({ title, description }) => (
